@@ -6,6 +6,7 @@ import { DECKS } from './decks.js';
 import * as plan from './plan.js';
 import { startStudy } from './study.js';
 import { go } from './main.js';
+import { openYds } from './yds.js';
 import { toast } from './ui.js';
 
 const TYPES = [
@@ -73,9 +74,10 @@ export function renderCalis(root) {
       counts, startBtn, extraBox),
     errIds.length ? el('button.btn.btn-wide', { on: { click: () => startStudy('hata', { ids: errIds }, () => go('calis')) } },
       t('c.errs', { n: errIds.length })) : null,
+    el('button.btn.btn-big', { on: { click: () => openYds() } }, el('span', t('c.ydsOpen')), el('span.mono.acc', t('c.ydsSub'))),
     el('div.kicker', t('c.soon')),
     el('div.list',
-      ...[['c.onek', 'v0.4'], ['c.gramer', 'v0.4'], ['c.yazma', 'v0.4'], ['c.ses', 'v0.4'], ['c.yds', 'v0.3']].map(([k, v]) =>
+      ...[['c.onek', 'v0.4'], ['c.gramer', 'v0.4'], ['c.yazma', 'v0.4'], ['c.ses', 'v0.4']].map(([k, v]) =>
         el('div.lock', el('span', t(k)), el('span.r', v)))),
     el('div.note', t('c.soonNote')),
   );

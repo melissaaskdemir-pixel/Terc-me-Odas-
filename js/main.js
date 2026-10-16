@@ -14,19 +14,21 @@ import { renderOkuma, isReading } from './okuma.js';
 import { renderSozluk } from './sozluk.js';
 import { renderArsiv, backupWarn } from './arsiv.js';
 import { renderKapsam } from './kapsam.js';
+import { renderYds, isExamOpen } from './yds.js';
 
-export const APP_VERSION = '0.2.3';
+export const APP_VERSION = '0.3.0';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],
   ['sozluk', 'tab.sozluk', renderSozluk], ['arsiv', 'tab.arsiv', renderArsiv],
   ['kapsam', 'tab.masa', renderKapsam, true],   // sekme çubuğunda görünmez
+  ['yds', 'tab.calis', renderYds, true],
 ];
 let current = 'masa';
 const scrollPos = {};
 
 export function go(name, keepScroll) {
-  if (waitingSW && !isStudying() && !isReading()) { waitingSW.postMessage('skipWaiting'); }
+  if (waitingSW && !isStudying() && !isReading() && !isExamOpen()) { waitingSW.postMessage('skipWaiting'); }
   const screen = document.getElementById('screen');
   if (!isStudying()) scrollPos[current] = screen.scrollTop;
   current = name;
@@ -42,7 +44,7 @@ function renderTabs() {
   nav.innerHTML = '';
   for (const [k, lab, , hidden] of TABS) {
     if (hidden) continue;
-    const b = el('button', { 'aria-current': k === current || (k === 'masa' && current === 'kapsam') ? 'page' : null, on: { click: () => go(k) } }, svg(ICON[k]), t(lab));
+    const b = el('button', { 'aria-current': k === current || (k === 'masa' && current === 'kapsam') || (k === 'calis' && current === 'yds') ? 'page' : null, on: { click: () => go(k) } }, svg(ICON[k]), t(lab));
     if (k === 'arsiv' && backupWarn()) b.append(el('span.dot', { 'aria-label': t('a.bkDot') }));
     nav.append(b);
   }
@@ -102,7 +104,7 @@ async function registerSW() {
   try {
     const reg = await navigator.serviceWorker.register('sw.js', { scope: './' });
     // yeni sürüm: çalışma sürmüyorsa hemen uygula, sürüyorsa oturum bitince
-    const onWaiting = w => { waitingSW = w; if (!isStudying()) w.postMessage('skipWaiting'); };
+    const onWaiting = w => { waitingSW = w; if (!isStudying() && !isExamOpen()) w.postMessage('skipWaiting'); };
     if (reg.waiting && navigator.serviceWorker.controller) onWaiting(reg.waiting);
     reg.addEventListener('updatefound', () => {
       const nw = reg.installing;

@@ -7,6 +7,7 @@ import * as plan from './plan.js';
 import * as audio from './audio.js';
 import { okumaAudioKeys } from './okuma.js';
 import { dictStatus, downloadDict } from './sozluk.js';
+import { loadYds } from './yds.js';
 import * as db from './db.js';
 import { toast, confirmBox, switchEl, stepper, seg } from './ui.js';
 import { startStudy } from './study.js';
@@ -252,7 +253,7 @@ async function renderAyar(body) {
   );
   try {
     for (const p of await db.all('packs')) {
-      packList.append(row(p.ad, t('a.packSub', { n: p.n, s: p.ses || 0, d: fmtDay(dayNum(p.at)) }),
+      packList.append(row(p.ad, p.yds ? t('a.packSubQ', { n: p.qn || 0, d: fmtDay(dayNum(p.at)) }) : t('a.packSub', { n: p.n, s: p.ses || 0, d: fmtDay(dayNum(p.at)) }),
         el('button.btn.btn-sm', { on: { click: async () => { if (await confirmBox(t('a.packDelQ', { a: p.ad }), t('a.del'), t('a.cancel'))) { await removePack(p.id); go('arsiv', true); } } } }, t('a.del'))));
     }
   } catch (e) { packList.append(el('div.note', String(e))); }
@@ -287,7 +288,8 @@ async function doImportPack() {
   toast(t('a.packReading'), 8000);
   try {
     const p = await importPack(await readPackFile(f));
-    toast(t('a.packOk', { a: p.ad, n: p.n }));
+    toast(p.yds ? t('a.packOkQ', { a: p.ad, n: p.qn }) : t('a.packOk', { a: p.ad, n: p.n }));
+    if (p.yds) loadYds(true);
     go('arsiv', true);
   } catch (e) { console.error(e); toast(t('a.packBad')); }
 }

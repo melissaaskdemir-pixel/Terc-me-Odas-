@@ -30,8 +30,8 @@ export function confirmBox(text, okLabel, cancelLabel) {
     modal(close => el('div', { style: { display: 'flex', flexDirection: 'column', gap: '14px' } },
       el('p', { style: { margin: 0, fontSize: '17px' } }, text),
       el('div.grid2',
-        el('button.btn', { on: { click: () => { close(); res(false); } } }, cancelLabel),
-        el('button.btn.btn-accent', { on: { click: () => { close(); res(true); } } }, okLabel)),
+        el('button.btn', { on: { click: () => { res(false); close(); } } }, cancelLabel),
+        el('button.btn.btn-accent', { on: { click: () => { res(true); close(); } } }, okLabel)),
     ), { onClose: () => res(false) });
   });
 }

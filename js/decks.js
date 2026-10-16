@@ -94,6 +94,7 @@ export async function importPack({ head: obj, blobs }) {
   const items = Object.entries(blobs || {}).map(([k, b]) => ['pses', b, pre + k]);
   for (let i = 0; i < items.length; i += 300) await db.putMany(items.slice(i, i + 300));
   const rec = { id: pid, ad: obj.ad || pid, v: obj.v || 1, at: Date.now(), decks, n: decks.reduce((a, d) => a + d.cards.length, 0), ses: items.length };
+  if (obj.yds) { rec.yds = obj.yds; rec.qn = (obj.yds.exams || []).reduce((a, e) => a + e.q.length, 0) + (obj.yds.ornek || []).length; }
   await db.put('packs', rec);
   for (const [id, d] of [...DECKS]) if (d.pack === pid) { d.cards.forEach(c => CARDS.delete(c.id)); DECKS.delete(id); }
   for (const d of decks) addDeck(d, pid);

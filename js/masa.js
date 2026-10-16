@@ -7,6 +7,7 @@ import { ring, modal, confirmBox } from './ui.js';
 import { startStudy } from './study.js';
 import { go } from './main.js';
 import { okumaStatus } from './okuma.js';
+import { ydsEstimate, openYds } from './yds.js';
 
 export function renderMasa(root) {
   const today = dayNum();
@@ -96,9 +97,15 @@ function recentErrCount(today) {
 }
 
 function ydsPanel() {
-  return el('div.panel', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' } },
-    el('div', el('div.kicker', t('m.yds')), el('div.note', t('m.ydsNote'))),
-    el('div.mono', { style: { fontSize: '28px' } }, String(set('ydsBase')).replace('.', ',')));
+  const note = el('div.note', t('m.ydsNote'));
+  const val = el('div.mono', { style: { fontSize: '28px' } }, String(set('ydsBase')).replace('.', ','));
+  ydsEstimate().then(e => {
+    if (!e) return;
+    val.textContent = e.score.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    note.textContent = t('m.ydsEst', { n: e.n });
+  }).catch(() => {});
+  return el('button.panel', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', textAlign: 'left', width: '100%' }, on: { click: () => openYds() } },
+    el('div', el('div.kicker', t('m.yds')), note), val);
 }
 
 function betPanel(today) {
