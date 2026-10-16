@@ -57,6 +57,9 @@ export default {
   'm.betStart': 'İddiaya gir', 'm.betConfirm': '7 gün boyunca her gün halkayı kapatmaya var mısın?', 'm.betYes': 'Varım', 'm.betNo': 'Sonra',
   'm.betActive': 'İddia sürüyor', 'm.betRule': 'Her kare bir gün: halka kapandıysa dolar.', 'm.betWon': 'Son iddiayı kazandın; dondurma eklendi.',
   'm.betLost': 'Son iddia kaçtı. Yenisine girebilirsin.', 'm.heat': 'Son 18 hafta', 'm.brief': 'Geçen haftanın brifingi',
+  'm.heavy': 'Tekrar yükü halkadan fazla; yeni kartlar kendiliğinden azaldı.',
+  'm.installK': 'Uygulama olarak kur', 'm.install': 'Safari\'de Paylaş düğmesine dokun, "Ana Ekrana Ekle"yi seç. Ana ekrandan açınca internetsiz çalışır ve ilerlemen kalıcı olur.',
+  'm.installClose': 'Kapat',
   'm.freezeUsed': 'Kaçırılan {n} gün için seri dondurma kullanıldı; serin korundu.',
 
   // brifing

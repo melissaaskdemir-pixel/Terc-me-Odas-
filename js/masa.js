@@ -24,6 +24,7 @@ export function renderMasa(root) {
   const freezes = S.prof.freezes ? el('span.muted', t('m.freezeN', { n: S.prof.freezes })) : null;
 
   const wrap = el('div.wrap',
+    installHint(),
     el('div.topline', el('span.kicker', `ДОСЬЕ № ${dosya}`),
       el('span.badge', { title: t('m.streakTitle') }, t('m.streak', { n: st.n }), freezes)),
     el('div.muted', { style: { marginTop: '-10px', fontSize: '14px' } }, fmtDay(today, { weekday: true })),
@@ -38,7 +39,7 @@ export function renderMasa(root) {
     el('button.btn.btn-primary.btn-big', { on: { click: () => startStudy('gunun', {}, () => go('masa')) } },
       el('span', left > 0 ? (day.n ? t('m.continueSet') : t('m.openSet')) : t('m.extraSet')),
       el('span.mono.acc', left > 0 ? t('m.cardsLeft', { n: left }) : t('m.plus20'))),
-    el('div.note', { style: { marginTop: '-8px' } }, t('m.plan', { due, nw: newLeft })),
+    el('div.note', { style: { marginTop: '-8px' } }, t('m.plan', { due, nw: newLeft }) + (due > goal ? ' ' + t('m.heavy') : '')),
 
     !st.todayDone ? el('button.btn.btn-wide', { on: { click: () => startStudy('mini', {}, () => go('masa')) } },
       t('m.mini', { n: plan.MINI })) : null,
@@ -59,6 +60,14 @@ export function renderMasa(root) {
     weeklyButton(today),
   );
   root.append(wrap);
+}
+
+function installHint() {
+  const standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+  if (standalone || S.prof.installHintClosed) return null;
+  const box = el('div.panel.sect', el('div.kicker', t('m.installK')), el('div.note', t('m.install')),
+    el('button.linkbtn', { on: { click: async () => { S.prof.installHintClosed = true; await saveProf(); box.remove(); } } }, t('m.installClose')));
+  return box;
 }
 
 function plan_dayOf(ts) { return dayNum(ts || Date.now()); }
@@ -157,7 +166,8 @@ export async function showBriefing(ws) {
   const s = await plan.weekSummary(ws);
   const weakest = Object.entries({ yapi: s.err.yapi, sonek: s.err.sonek, imla: s.err.imla }).sort((a, b) => b[1] - a[1])[0];
   const best = [...s.days].sort((a, b) => b.n - a.n)[0];
-  const weekNo = Math.floor((ws - weekStart(dayNum(new Date(new Date().getFullYear(), 0, 4).getTime()))) / 7) + 1;
+  const y = new Date((ws + 3) * 86400e3).getUTCFullYear();
+  const weekNo = Math.floor((ws - weekStart(Math.floor(Date.UTC(y, 0, 4) / 86400e3))) / 7) + 1;
   modal(close => el('div.paper.brief', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
     el('h3', `СВОДКА · ${t('b.week')} ${weekNo}`),
     el('div.mono', { style: { fontSize: '12px', color: 'var(--p-kicker)' } }, `${fmtDay(ws)} – ${fmtDay(ws + 6, { year: true })}`),

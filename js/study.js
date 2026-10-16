@@ -56,6 +56,7 @@ function buildFrame() {
   const inp = el('div.st-in', el('label', { for: 'cevap' }, F.label, F.labelR), F.input);
   F.input.id = 'cevap';
   const root = el('div.study', top, sub, F.cardwrap, F.hint, inp, F.act);
+  root.addEventListener('mousedown', e => { if (e.target.closest('button')) e.preventDefault(); });
   screen.append(root);
   updateTop();
 }
@@ -85,6 +86,7 @@ function setActions(...btns) {
 function next() {
   clearTimeout(cur.advT);
   audio.stop();
+  if (dayNum() !== cur.sess.today) return endScreen(); // gün değişti
   const item = plan.nextItem(cur.sess);
   if (!item) return endScreen();
   const card = CARDS.get(item.id);
@@ -141,25 +143,26 @@ function clozeNode(z, fill, cls) {
 function promptNodes() {
   const c = cur.card, ex = cur.ex;
   const out = [];
+  const asking = cur.state === 'ask';
   const long = (c.q || '').length > 60;
   switch (c.t) {
     case 'cift':
-      out.push(el('div.v.ru', c.v), el('div.qs', c.q), el('div.hint', c.h));
+      out.push(el('div.v.ru', c.v), el('div.qs', c.q), asking ? el('div.hint', c.h) : null);
       break;
     case 'yonetim':
-      out.push(el('div', el('span.v.ru', c.v), el('span.qs', '  ' + c.q)), clozeNode(ex.cloze, cur.fill, cur.fillCls), el('div.hint', c.h));
+      out.push(el('div', el('span.v.ru', c.v), el('span.qs', '  ' + c.q)), clozeNode(ex.cloze, cur.fill, cur.fillCls), asking ? el('div.hint', c.h) : null);
       break;
     case 'koll':
     case 'esanlam':
-      out.push(el('div.q' + (long ? '.long' : ''), c.q), clozeNode(ex.cloze, cur.fill, cur.fillCls), el('div.hint', c.h));
+      out.push(el('div.q' + (long ? '.long' : ''), c.q), clozeNode(ex.cloze, cur.fill, cur.fillCls), asking ? el('div.hint', c.h) : null);
       break;
     case 'register':
-      out.push(el('div.v.ru', c.v), el('div.qs', c.q), el('div.hint', c.h));
+      out.push(el('div.v.ru', c.v), el('div.qs', c.q), asking ? el('div.hint', c.h) : null);
       break;
     default:
       out.push(el('div.q' + (long ? '.long' : ''), c.q));
       if (c.qs) out.push(el('div.qs', c.qs));
-      if (c.h) out.push(el('div.hint', c.h));
+      if (c.h && asking) out.push(el('div.hint', c.h));
   }
   return out;
 }
@@ -171,9 +174,14 @@ function renderCard(extra) {
     cur.item.isNew && cur.state === 'ask' && !cur.item.again ? el('div.swipehint', t('st.swipe')) : null,
     extra || null);
   cur.cardEl = card;
-  cur.f.cardwrap.innerHTML = '';
-  cur.f.cardwrap.append(card);
-  cur.f.cardwrap.scrollTop = 0;
+  const wrapEl = cur.f.cardwrap;
+  wrapEl.innerHTML = '';
+  wrapEl.append(card);
+  wrapEl.scrollTop = 0;
+  // klavye açıkken alan dar: cevap bölümü görünsün diye kaydır
+  if (extra && cur.state !== 'right') requestAnimationFrame(() => {
+    if (card.scrollHeight > wrapEl.clientHeight + 4) wrapEl.scrollTop = Math.max(0, extra.offsetTop - 12);
+  });
   if (cur.state === 'ask' && cur.item.isNew && !cur.item.again) enableSwipe(card);
   card.addEventListener('click', e => {
     if (cur.state === 'right' && !e.target.closest('button')) holdAdvance();
@@ -193,17 +201,23 @@ function giveHint() {
 function submit() {
   const f = cur.f;
   const typed = f.input.value;
+  if (cur.state === 'done' || cur.state === 'known' || cur.state === 'end') return;
   if (cur.state === 'right') return advance();
   if (cur.state === 'wrong' || cur.state === 'teach') return retype(typed);
   if (!typed.trim()) { shake(); return; }
   cur.ms = performance.now() - cur.shownAt;
-  const r = check(typed, cur.ex.accepted, { partner: cur.card.pa, user: S.prof.alts?.[cur.card.id] });
+  const r = check(typed, cur.ex.accepted, checkOpts());
   if (r.res === 'klavye') { toast(t('st.keyboard')); return; }
   if (r.res === 'empty') { shake(); return; }
   cur.res = r;
   cur.typed = typed;
   if (r.res === 'ok') return onRight(r);
   onWrong(r);
+}
+
+function checkOpts() {
+  const c = cur.card;
+  return { partner: c.pa, user: S.prof.alts?.[c.id], wrongAspect: c.t === 'cift' ? [c.v] : null };
 }
 
 function shake() {
@@ -215,29 +229,33 @@ function shake() {
 
 async function onRight(r) {
   cur.state = 'right';
+  const item = cur.item;
   const f = cur.f;
   f.input.classList.add('ok');
   f.hint.textContent = '';
   // sesi aynı dokunuş içinde başlat
   let ap = null;
   if (set('autoplay')) ap = audio.playNow(cur.ex.audio);
-  const res = await plan.recordAnswer(cur.sess, cur.item, { res: 'ok', typed: cur.typed, exp: cur.ex.show, ms: cur.ms, hint: cur.hint, expLen: cur.ex.show.length, why: r.partner ? 'partner' : '' });
+  // kayıt eşzamanlı başlar (seri, kombo, halka hemen güncellenir); yazma işlemi arkada sürer
+  const pr = plan.recordAnswer(cur.sess, item, { res: 'ok', typed: cur.typed, exp: cur.ex.show, ms: cur.ms, hint: cur.hint, expLen: cur.ex.show.length, why: r.partner ? 'partner' : '' });
   cur.fill = cur.ex.show;
   cur.fillCls = 'ok';
-  const combo = res.combo >= 5 && res.combo % 5 === 0;
-  const fb = feedback({ verdict: 'ok', compact: true, r });
-  const card = renderCard(fb);
+  const combo = cur.sess.combo >= 5 && cur.sess.combo % 5 === 0;
+  const card = renderCard(feedback({ verdict: 'ok', compact: true, r }));
   card.append(el('div.stamp' + (combo ? '.accent' : ''), combo ? 'ОТЛИЧНО' : 'ВЕРНО'));
-  if (res.pts) card.append(el('div.ptsfly', `+${res.pts}`));
   audio.sfx('stamp');
   setActions(el('button.btn.btn-ok', { on: { click: advance } }, t('st.next')));
   updateTop();
+  const res = await pr;
   await afterRecord(res);
+  if (!cur || cur.item !== item) return; // kullanıcı çoktan geçti
+  if (res.pts) card.append(el('div.ptsfly', `+${res.pts}`));
+  updateTop();
   if (ap === null && set('autoplay')) ap = audio.play(cur.ex.audio);
   const delay = set('advance') * 1000;
   const started = performance.now();
   cur.advHold = false;
-  const go = () => { if (cur && cur.state === 'right' && !cur.advHold) advance(); };
+  const go = () => { if (cur && cur.item === item && cur.state === 'right' && !cur.advHold) advance(); };
   cur.advT = setTimeout(() => {
     if (ap) {
       // ses bitene kadar bekle, en çok 3,5 sn
@@ -290,7 +308,7 @@ function dontKnow() {
 
 async function retype(typed) {
   if (!typed.trim()) { shake(); return; }
-  const r = check(typed, cur.ex.accepted, { partner: cur.card.pa, user: S.prof.alts?.[cur.card.id] });
+  const r = check(typed, cur.ex.accepted, checkOpts());
   if (r.res !== 'ok') {
     cur.retypeFails++;
     shake();
