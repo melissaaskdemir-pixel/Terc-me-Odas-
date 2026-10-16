@@ -14,7 +14,7 @@ import { renderOkuma } from './okuma.js';
 import { renderSozluk } from './sozluk.js';
 import { renderArsiv, backupWarn } from './arsiv.js';
 
-export const APP_VERSION = '0.1.0';
+export const APP_VERSION = '0.1.3';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],

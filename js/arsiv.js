@@ -24,7 +24,10 @@ export function backupWarn() {
 }
 
 export function renderArsiv(root) {
-  const wrap = el('div.wrap', el('div.kicker', t('a.kicker')), el('h1.h1', t('a.title')));
+  const wrap = el('div.wrap', el('div.kicker', t('a.kicker')),
+    el('div.topline', el('h1.h1', t('a.title')),
+      el('button.btn.btn-sm', { on: { click: checkUpdate } }, t('a.updateShort'))),
+    el('div.note', { style: { marginTop: '-12px' } }, t('a.versions', { a: APP_VERSION, c: CONTENT_VERSION, p: db.persistent ? t('a.persistOk') : t('a.persistNo') })));
   if (backupWarn()) {
     const a = backupAgeDays();
     wrap.append(el('div.warn', el('span.t', a == null ? t('a.bkNever') : t('a.bkOld', { n: a })),
@@ -229,17 +232,19 @@ async function renderAyar(body) {
     el('div.note', t('a.packNote')),
     el('button.btn.btn-wide', { on: { click: doImportPack } }, t('a.packImport')),
   );
-  const packs = await db.all('packs');
-  for (const p of packs) {
-    body.append(row(p.ad, t('a.packSub', { n: p.n, s: p.ses || 0, d: fmtDay(dayNum(p.at)) }),
-      el('button.btn.btn-sm', { on: { click: async () => { if (await confirmBox(t('a.packDelQ', { a: p.ad }), t('a.del'), t('a.cancel'))) { await removePack(p.id); go('arsiv', true); } } } }, t('a.del'))));
-  }
-  body.append(
+  const packList = el('div');
+  body.append(packList,
     el('div.kicker', t('a.gApp')),
     el('div.note', t('a.versions', { a: APP_VERSION, c: CONTENT_VERSION, p: db.persistent ? t('a.persistOk') : t('a.persistNo') })),
     el('button.btn.btn-wide', { on: { click: checkUpdate } }, t('a.update')),
     el('div.note', t('a.about')),
   );
+  try {
+    for (const p of await db.all('packs')) {
+      packList.append(row(p.ad, t('a.packSub', { n: p.n, s: p.ses || 0, d: fmtDay(dayNum(p.at)) }),
+        el('button.btn.btn-sm', { on: { click: async () => { if (await confirmBox(t('a.packDelQ', { a: p.ad }), t('a.del'), t('a.cancel'))) { await removePack(p.id); go('arsiv', true); } } } }, t('a.del'))));
+    }
+  } catch (e) { packList.append(el('div.note', String(e))); }
 }
 
 async function doBackup() {

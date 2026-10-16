@@ -123,7 +123,7 @@ export default {
   'a.packImport': 'Paket içe aktar', 'a.packSub': '{n} kart · {s} ses · {d}', 'a.packReading': 'Paket okunuyor…', 'a.packDelQ': '"{a}" paketi silinsin mi? Kart ilerlemesi yedekte kalır.',
   'a.del': 'Sil', 'a.packOk': '"{a}" eklendi: {n} kart.', 'a.packBad': 'Paket okunamadı.',
   'a.gApp': 'Uygulama', 'a.versions': 'Uygulama {a} · içerik {c} · kayıt: {p}', 'a.persistOk': 'kalıcı', 'a.persistNo': 'geçici (gizli sekme?)',
-  'a.update': 'Güncellemeleri denetle',
+  'a.update': 'Güncellemeleri denetle', 'a.updateShort': 'Güncelle',
   'a.about': 'Kelime verisi: Melisa\'nın çalışma dosyaları ve Dışişleri Bakanlığı terminoloji listeleri. Çekimler: OpenCorpora (pymorphy3). Vurgu: OpenRussian (CC BY-SA). Ses: Silero TTS (ticari olmayan kullanım). Yazı tipleri: ParaType PT Serif, PT Sans, PT Mono (OFL).',
 
   // güncelleme ve hatalar
