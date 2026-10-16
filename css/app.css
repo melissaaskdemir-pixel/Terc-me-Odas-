@@ -469,3 +469,16 @@ body.studying .toast { bottom: auto; top: calc(var(--safe-t) + 64px); }
 .yds-bar .b { height: 8px; background: var(--p-line); border-radius: 4px; overflow: hidden; }
 .yds-bar .b i { display: block; height: 100%; background: var(--p-ok); }
 .yds-bar .v { text-align: right; font-size: 12.5px; }
+/* kalem, silgi, eleme */
+.mk .w.u, .mk .sp.u { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px;
+  background: color-mix(in srgb, var(--accent) 9%, transparent); border-radius: 2px; }
+body.tool-on .mk { touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; cursor: crosshair; }
+.yds-opt.x { opacity: .55; }
+.yds-opt.x .tx { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.yds-tools { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.yds-tools .tb { min-height: 38px; padding: 0 10px; border: 1px solid var(--line2); border-radius: 19px; background: none; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.yds-tools .tb svg { width: 17px; height: 17px; }
+.yds-tools .tb[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.yds-thint { flex-basis: 100%; font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.yds-thint:empty { display: none; }
+.yds-nav.two { grid-template-columns: 1fr 1.4fr; }

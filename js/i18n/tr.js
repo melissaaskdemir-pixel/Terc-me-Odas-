@@ -125,6 +125,13 @@ export default {
   'y.anchorTag': 'ÖSYM', 'y.blank': 'Boş bıraktın.', 'y.right': 'Doğru.', 'y.wrongWas': 'Senin cevabın {a}, doğrusu {b}.',
   'y.noExpl': 'ÖSYM sorularında açıklama yok.', 'y.prev': 'Önceki', 'y.next': 'Sonraki', 'y.done': 'Bitti',
   'y.poolEmpty': 'Bu bölüm için soru yok. Önce ÖSYM paketini yükle ya da bir deneme çöz.', 'y.correctN': 'doğru', 'y.again': '10 soru daha',
+  'y.pen': 'Kalem', 'y.eraser': 'Silgi', 'y.clear': 'Temizle',
+  'y.penHint': 'Kelimelerin üstünden parmağını kaydır; cümleye çift dokun. Şıkka dokunursan şık elenir.',
+  'y.eraserHint': 'Çizgileri silmek için üstünden geç; elenen şıkka dokunursan geri gelir.',
+  'y.casual': 'Soru çöz', 'y.casualTitle': 'SORU ÇÖZ', 'y.casToday': 'bugün {n} · {ok} doğru',
+  'y.casualNote': 'Süre yok, puan yok. Her sorudan sonra doğrusu ve varsa açıklaması gelir; istediğin an bırakırsın. Görmediğin sorular önce gelir, parçalı sorular parçasıyla birlikte.',
+  'y.casSecs': 'Bölümler (hiçbiri seçili değilse hepsi)', 'y.casGen': 'Deneme sorularını da kat', 'y.casGenSub': 'Kapalıyken yalnız çözdüğün denemelerin soruları gelir; böylece denemeler taze kalır.',
+  'y.poolN': 'Havuzda {n} soru.', 'y.casStart': 'Soru çözmeye başla', 'y.reveal': 'Cevabı göster', 'y.skip': 'Atla', 'y.shown': 'Doğrusu {b}.',
   'ys.kelime': 'Kelime', 'ys.gramer': 'Dil bilgisi', 'ys.bosluk': 'Cümle boşluğu', 'ys.cloze': 'Parçada boşluk', 'ys.tamamlama': 'Cümle tamamlama',
   'ys.ceviri': 'Çeviri', 'ys.okuma': 'Okuma', 'ys.diyalog': 'Diyalog', 'ys.anlam': 'Anlamca en yakın', 'ys.paragraf': 'Paragraf tamamlama', 'ys.butunluk': 'Anlam bütünlüğü',
 

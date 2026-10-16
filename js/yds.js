@@ -15,7 +15,7 @@ const LETTERS = 'ABCDE';
 
 let GEN = null, OSYM = null, R = null, loadP = null;
 const put = (w, ...xs) => w.append(...xs.filter(x => x != null && x !== false));
-const ui = { view: 'home', run: null, i: 0, review: null, tick: null, practice: null };
+const ui = { view: 'home', run: null, i: 0, review: null, tick: null, cas: null, tool: null };
 
 // ---------------------------------------------------------------- veri
 export function loadYds(force) {
@@ -137,7 +137,7 @@ export async function ydsEstimate() {
 }
 
 // ---------------------------------------------------------------- ekranlar
-export function isExamOpen() { return ui.view === 'exam'; }
+export function isExamOpen() { return ui.view === 'exam' || ui.view === 'casual'; }
 
 export function renderYds(root) {
   stopTick();
@@ -148,15 +148,41 @@ export function renderYds(root) {
     if (ui.view === 'exam' && ui.run) return renderExam(root, wrap);
     if (ui.view === 'result' && ui.run) return renderResult(wrap);
     if (ui.view === 'review' && ui.run) return renderReview(root, wrap);
-    if (ui.view === 'practice' && ui.practice) return renderPractice(root, wrap);
+    if (ui.view === 'casual' && ui.cas) return renderCasual(root, wrap);
     renderHome(wrap);
   }).catch(e => { console.error(e); put(wrap, el('div.panel', t('err.load'))); });
 }
 
 function nav(view) { ui.view = view; go('yds', view === 'home'); }
 
+function casualBox() {
+  const secs = new Set(R.casSecs || []);
+  const day = casDay();
+  const { pool } = casualPool();
+  const chips = el('div.chips', ...ORDER.map(sc => el('button.chip', {
+    'aria-pressed': String(secs.has(sc)),
+    on: { click: e => { secs.has(sc) ? secs.delete(sc) : secs.add(sc); R.casSecs = [...secs]; save(); e.currentTarget.setAttribute('aria-pressed', String(secs.has(sc))); count.textContent = t('y.poolN', { n: casualPool().pool.length }); } },
+  }, t('ys.' + sc))));
+  const count = el('span', t('y.poolN', { n: pool.length }));
+  return el('section.panel.sect',
+    el('div.topline', el('h2.h2', t('y.casual')), el('span.kicker', t('y.casToday', { n: day.n, ok: day.ok }))),
+    el('div.note', t('y.casualNote')),
+    el('div.kicker', t('y.casSecs')), chips,
+    el('div.setrow', el('div.lbl', el('span', t('y.casGen')), el('small', t('y.casGenSub'))),
+      switchBtn(!!R.casGen, v => { R.casGen = v; save(); count.textContent = t('y.poolN', { n: casualPool().pool.length }); })),
+    el('div.note', count),
+    el('button.btn.btn-primary.btn-wide', { on: { click: () => startCasual() } }, t('y.casStart')));
+}
+
+function switchBtn(on, onChange) {
+  const b = el('button.switch', { role: 'switch', 'aria-checked': String(on) });
+  b.addEventListener('click', () => { const v = b.getAttribute('aria-checked') !== 'true'; b.setAttribute('aria-checked', String(v)); onChange(v); });
+  return b;
+}
+
 function renderHome(wrap) {
   document.body.classList.remove('studying');
+  if (ui.tool) setTool(null);
   const list = examList();
   const cur = R.runs.find(r => !r.done && !r.practice);
   const runsOf = id => R.runs.filter(r => r.exam === id && r.done && !r.practice);
@@ -181,6 +207,7 @@ function renderHome(wrap) {
     cur ? el('button.btn.btn-primary.btn-big', { on: { click: () => resume(cur) } },
       el('span', t('y.resume')), el('span.mono', `${Object.keys(cur.ans).length}/${cur.n}`)) : null,
     cur ? el('div.note', { style: { marginTop: '-10px' } }, cur.examAd + (cur.half ? ' · ' + t('y.half') : '') + ' · ' + (cur.mode === 'real' ? t('y.real') : t('y.split')) + ' · ' + t('y.left', { t: fmtTime(remaining(cur)) })) : null,
+    casualBox(),
     el('div.kicker', t('y.settings')),
     el('div.setrow', el('div.lbl', el('span', t('y.size')), el('small', t('y.sizeSub'))),
       seg([['full', t('y.full')], ['half', t('y.half')]], opts.size, v => { S.prof.ydsSize = v; opts.size = v; })),
@@ -190,9 +217,7 @@ function renderHome(wrap) {
     !OSYM ? el('div.warn', el('span.t', t('y.noPack'))) : null,
     el('div.list', ...list.map(examRow)),
     el('div.note', t('y.anchorNote')),
-    el('div.kicker', t('y.practice')),
-    el('div.note', t('y.practiceNote')),
-    el('div.chips', ...ORDER.map(s => el('button.chip', { on: { click: () => startPractice(s) } }, t('ys.' + s)))),
+
     R.runs.some(r => r.done && !r.practice) ? el('div.kicker', t('y.history')) : null,
     el('div.list', ...R.runs.filter(r => r.done && !r.practice).slice(-10).reverse().map(r =>
       el('button.res', { on: { click: () => { ui.run = r; nav('result'); } } },
@@ -280,10 +305,13 @@ function renderExam(root, wrap) {
 
   const secName = t('ys.' + q.s);
   const range = secRange(ex, i);
-  const passage = q.p && ex.P[q.p] ? passageNode(ex.P[q.p], q) : null;
-  const optBtn = (o, k) => el('button.yds-opt' + (run.ans[i] === k ? '.on' : ''), {
-    on: { click: () => { if (run.ans[i] === k) delete run.ans[i]; else run.ans[i] = k; sfx('paper'); save(); renderExam(root, wrap); } },
-  }, el('span.l.mono', LETTERS[k] + ')'), el('span.tx' + (q.s === 'ceviri' && /[а-яё]/i.test(o) ? '.ru' : (q.s !== 'ceviri' ? '.ru' : '')), o));
+  const passage = q.p && ex.P[q.p] ? passageNode(ex.P[q.p], q, run) : null;
+  const rerender = () => renderExam(root, wrap);
+  const pick = (k, strikeOnly) => {
+    if (strikeOnly) { if ((run.strike?.[q.id] || []).includes(run.ans[i])) delete run.ans[i]; save(); return rerender(); }
+    if (run.ans[i] === k) delete run.ans[i]; else run.ans[i] = k;
+    sfx('paper'); save(); rerender();
+  };
   const flagged = run.flags.includes(i);
   const frame = el('div.study.yds',
     el('div.st-top',
@@ -295,41 +323,154 @@ function renderExam(root, wrap) {
       passage,
       el('div.paper.yds-q',
         el('div.lab', `${t('y.q')} ${i + 1}` + (flagged ? ' · ' + t('y.flagged') : '')),
-        q.t ? el('div.yds-stem' + (q.s === 'ceviri' && !/[а-яё]/i.test(q.t) ? '' : '.ru') + (q.s === 'diyalog' ? '.dlg' : ''), stemNode(q.t)) : null,
-        el('div.yds-opts', ...q.o.map(optBtn)))),
+        q.t ? el('div.yds-stem' + (q.s === 'ceviri' && !/[а-яё]/i.test(q.t) ? '' : '.ru') + (q.s === 'diyalog' ? '.dlg' : ''), stemNode(q, run)) : null,
+        el('div.yds-opts', ...q.o.map((_, k) => optionNode(q, k, run, { selected: run.ans[i] === k, onPick: pick }))))),
+    toolsBar(() => { clearMarks(run, q, ex.P); rerender(); }),
     el('div.yds-nav',
-      el('button.btn', { disabled: i === 0, on: { click: () => { ui.i = i - 1; renderExam(root, wrap); } } }, '‹'),
-      el('button.btn' + (flagged ? '.btn-accent' : ''), { on: { click: () => { run.flags = flagged ? run.flags.filter(x => x !== i) : [...run.flags, i]; save(); renderExam(root, wrap); } } }, svg(ICON.flag), t('y.flag')),
-      i < n - 1 ? el('button.btn.btn-primary', { on: { click: () => { ui.i = i + 1; renderExam(root, wrap); } } }, '›')
+      el('button.btn', { disabled: i === 0, on: { click: () => { ui.i = i - 1; rerender(); } } }, '‹'),
+      el('button.btn' + (flagged ? '.btn-accent' : ''), { on: { click: () => { run.flags = flagged ? run.flags.filter(x => x !== i) : [...run.flags, i]; save(); rerender(); } } }, svg(ICON.flag), t('y.flag')),
+      i < n - 1 ? el('button.btn.btn-primary', { on: { click: () => { ui.i = i + 1; rerender(); } } }, '›')
         : el('button.btn.btn-ok', { on: { click: () => optik() } }, t('y.finishShort'))),
   );
+  bindMarking(frame, run);
   root.append(frame);
   const body = frame.querySelector('.yds-body');
   if (body && ui._lastI !== i) { body.scrollTop = 0; }
+  else if (body && ui._scroll != null) body.scrollTop = ui._scroll;
+  body && body.addEventListener('scroll', () => { ui._scroll = body.scrollTop; });
   ui._lastI = i;
 }
 
-function stemNode(s) {
-  // boşluk (----) çizgi olarak
-  const out = [];
-  s.split(/(----)/).forEach(part => out.push(part === '----' ? el('span.yds-gap', '   ') : part));
-  return out;
+// ---------------------------------------------------------------- kalem ve silgi
+// Metin kelime kelime işaretlenir (alt çizgi). İşaretler bağlama (deneme ya da serbest çözüm) yazılır:
+// ctx.marks = { 'q:<soru>' | 'p:<parça>': [kelime sırası…] }, ctx.strike = { <soru>: [şık…] } (elenen şıklar)
+const PEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.2-4.6L16 4.6a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8 4 20zM14 6.6l3.4 3.4"/></svg>';
+const ERASER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 20h13M5.4 14.6l8.5-8.5a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8L12 18.2a2 2 0 0 1-1.4.6H8.3a2 2 0 0 1-1.4-.6l-1.5-1.5a2 2 0 0 1 0-2.1zM9.5 10.5l5 5"/></svg>';
+
+function markText(text, key, ctx, { cur } = {}) {
+  const box = el('span.mk', { 'data-key': key });
+  const set = new Set((ctx && ctx.marks && ctx.marks[key]) || []);
+  let k = 0;
+  for (const m of text.matchAll(/\(\d{1,2}\)----|----|\s+|[^\s]+/g)) {
+    const tok = m[0];
+    if (tok === '----') box.append(el('span.yds-gap', '   '));
+    else if (/^\(\d{1,2}\)----$/.test(tok)) { const n = +tok.slice(1, -5); box.append(el('span.yds-gap' + (n === cur ? '.cur' : ''), `(${n})`)); }
+    else if (/^\s+$/.test(tok)) box.append(k > 0 && !tok.includes('\n') ? el('span.sp' + (set.has(k - 1) && set.has(k) ? '.u' : ''), { 'data-a': k - 1 }, tok) : tok);
+    else { box.append(el('span.w' + (set.has(k) ? '.u' : ''), { 'data-k': k }, tok)); k++; }
+  }
+  return box;
 }
 
-function passageNode(p, q) {
+function stemNode(q, ctx) { return markText(q.t, 'q:' + q.id, ctx); }
+
+function passageNode(p, q, ctx) {
   const key = 'yds-pas-open';
   let open = true;
   try { open = localStorage.getItem(key) !== '0'; } catch (e) {}
-  const body = el('div.yds-ptext.ru');
-  // parça içi boşluk numaraları: bu sorunun boşluğu vurgulu
-  p.t.split(/(\(\d{1,2}\)----)/).forEach(part => {
-    const m = /^\((\d{1,2})\)----$/.exec(part);
-    if (m) body.append(el('span.yds-gap' + (+m[1] === q.n ? '.cur' : ''), `(${m[1]})`));
-    else body.append(part);
-  });
+  const body = el('div.yds-ptext.ru', markText(p.t, 'p:' + p.id, ctx, { cur: q.n }));
   const box = el('details.paper.yds-pas', { open }, el('summary.lab', t('y.passage')), body);
   box.addEventListener('toggle', () => { try { localStorage.setItem(key, box.open ? '1' : '0'); } catch (e) {} });
   return box;
+}
+
+const endsSentence = w => /[.!?…]["»”)]*$/.test(w);
+function setTool(tool, bar) {
+  ui.tool = ui.tool === tool ? null : tool;
+  document.body.classList.toggle('tool-on', !!ui.tool);
+  if (bar) bar.querySelectorAll('[data-tool]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tool === ui.tool)));
+  const hint = bar && bar.querySelector('.yds-thint');
+  if (hint) hint.textContent = ui.tool === 'pen' ? t('y.penHint') : ui.tool === 'eraser' ? t('y.eraserHint') : '';
+}
+
+function toolsBar(onClear) {
+  const bar = el('div.yds-tools',
+    el('button.tb', { 'data-tool': 'pen', 'aria-pressed': String(ui.tool === 'pen'), 'aria-label': t('y.pen'), on: { click: () => setTool('pen', bar) } }, svg(PEN), el('span', t('y.pen'))),
+    el('button.tb', { 'data-tool': 'eraser', 'aria-pressed': String(ui.tool === 'eraser'), 'aria-label': t('y.eraser'), on: { click: () => setTool('eraser', bar) } }, svg(ERASER), el('span', t('y.eraser'))),
+    el('button.tb', { 'aria-label': t('y.clear'), on: { click: onClear } }, el('span', t('y.clear'))),
+    el('span.yds-thint', ui.tool === 'pen' ? t('y.penHint') : ui.tool === 'eraser' ? t('y.eraserHint') : ''));
+  return bar;
+}
+
+// Kalem/silgi işaretçi olayları: sürükleyince aradaki kelimeler, çift dokununca bütün cümle
+function bindMarking(root, ctx) {
+  root.addEventListener('pointerdown', e => {
+    if (!ui.tool) return;
+    const w = e.target.closest('.mk .w');
+    if (!w) return;
+    const mk = w.closest('.mk');
+    const key = mk.dataset.key;
+    const words = [...mk.querySelectorAll('.w')];
+    ctx.marks = ctx.marks || {};
+    const base = new Set(ctx.marks[key] || []);
+    const add = ui.tool === 'pen';
+    const start = +w.dataset.k;
+    const paint = (lo, hi) => {
+      const next = new Set(base);
+      for (let i = Math.min(lo, hi); i <= Math.max(lo, hi); i++) { if (add) next.add(i); else next.delete(i); }
+      words.forEach((x, i) => x.classList.toggle('u', next.has(i)));
+      mk.querySelectorAll('.sp').forEach(sp => sp.classList.toggle('u', next.has(+sp.dataset.a) && next.has(+sp.dataset.a + 1)));
+      ctx.marks[key] = [...next].sort((a, b) => a - b);
+    };
+    const now = Date.now();
+    const lt = ui._tap;
+    if (lt && lt.key === key && Math.abs(lt.k - start) <= 1 && now - lt.t < 380) {
+      let lo = start, hi = start;
+      while (lo > 0 && !endsSentence(words[lo - 1].textContent)) lo--;
+      while (hi < words.length - 1 && !endsSentence(words[hi].textContent)) hi++;
+      paint(lo, hi);
+      ui._tap = null;
+      save();
+      return;
+    }
+    paint(start, start);
+    let moved = false;
+    const mv = ev => {
+      const t2 = document.elementFromPoint(ev.clientX, ev.clientY);
+      const w2 = t2 && t2.closest && t2.closest('.w');
+      if (w2 && w2.parentElement === mk) { moved = moved || +w2.dataset.k !== start; paint(start, +w2.dataset.k); }
+    };
+    const up = () => {
+      root.removeEventListener('pointermove', mv);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      ui._tap = moved ? null : { key, k: start, t: now };
+      save();
+    };
+    root.addEventListener('pointermove', mv);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+  });
+}
+
+function clearMarks(ctx, q, P) {
+  if (!ctx.marks) return;
+  delete ctx.marks['q:' + q.id];
+  if (q.p && P[q.p]) delete ctx.marks['p:' + q.p];
+  if (ctx.strike) delete ctx.strike[q.id];
+  save();
+}
+
+// Şık: kalem/silgi açıkken dokunmak şıkkı eler (üstünü çizer), kapalıyken seçer
+function optionNode(q, k, ctx, { selected, onPick, state } = {}) {
+  const struck = (ctx?.strike?.[q.id] || []).includes(k);
+  const o = q.o[k];
+  const cls = 'button.yds-opt' + (selected ? '.on' : '') + (struck ? '.x' : '') + (state === 'ok' ? '.ok' : state === 'bad' ? '.bad' : '');
+  return el(cls, {
+    on: {
+      click: () => {
+        if (ui.tool && ctx && !state) {
+          ctx.strike = ctx.strike || {};
+          const s2 = new Set(ctx.strike[q.id] || []);
+          if (ui.tool === 'pen') s2.add(k); else s2.delete(k);
+          ctx.strike[q.id] = [...s2];
+          save();
+          onPick && onPick(null, true);
+          return;
+        }
+        onPick && onPick(k);
+      },
+    },
+  }, el('span.l.mono', LETTERS[k] + ')'), el('span.tx' + (/[а-яё]/i.test(o) ? '.ru' : ''), o));
 }
 
 function secRange(ex, i) {
@@ -342,6 +483,7 @@ function secRange(ex, i) {
 
 function leaveExam() {
   stopTick();
+  if (ui.tool) setTool(null);
   document.body.classList.remove('studying');
   if (ui.run.mode === 'real') toast(t('y.realLeave'), 3500);
   nav('home');
@@ -423,11 +565,10 @@ function renderReview(root, wrap) {
   put(wrap, 
     el('div.topline', el('button.linkbtn', { on: { click: () => nav('result') } }, '‹ ' + t('y.resKicker')), el('span.mono.muted', `${k + 1}/${idx.length}`)),
     el('div.kicker', `${t('ys.' + q.s)} · ${t('y.q')} ${i + 1}` + (it.anchor ? ' · ' + t('y.anchorTag') : '')),
-    q.p && ex.P[q.p] ? passageNode(ex.P[q.p], q) : null,
+    q.p && ex.P[q.p] ? passageNode(ex.P[q.p], q, run) : null,
     el('div.paper.yds-q',
-      q.t ? el('div.yds-stem' + (q.s === 'diyalog' ? '.dlg' : '') + (/[а-яё]/i.test(q.t) ? '.ru' : ''), stemNode(q.t)) : null,
-      el('div.yds-opts', ...q.o.map((o, j) => el('div.yds-opt' + (j === q.a ? '.ok' : '') + (j === mine && j !== q.a ? '.bad' : ''),
-        el('span.l.mono', LETTERS[j] + ')'), el('span.tx' + (/[а-яё]/i.test(o) ? '.ru' : ''), o)))),
+      q.t ? el('div.yds-stem' + (q.s === 'diyalog' ? '.dlg' : '') + (/[а-яё]/i.test(q.t) ? '.ru' : ''), stemNode(q, run)) : null,
+      el('div.yds-opts.ro', ...q.o.map((_, j) => optionNode(q, j, run, { state: j === q.a ? 'ok' : j === mine ? 'bad' : 'none' }))),
       el('div.meta', mine == null ? t('y.blank') : mine === q.a ? t('y.right') : t('y.wrongWas', { a: LETTERS[mine], b: LETTERS[q.a] })),
       q.x ? el('div.yds-x', q.x) : (it.q.id.includes(':') && !it.q.x ? el('div.meta.small', t('y.noExpl')) : null)),
     el('div.grid2',
@@ -437,67 +578,101 @@ function renderReview(root, wrap) {
   );
 }
 
-// ---------------------------------------------------------------- bölüm turu (anında geri bildirim)
-function practicePool(sec) {
-  const pool = [];
-  const P = {};
+// ---------------------------------------------------------------- serbest çözüm (süresiz, anında geri bildirim)
+// Havuz: ÖSYM kitapçıkları (çapa sınavları hariç), 2026 örneği; istenirse üretilmiş denemeler. Görülmeyenler önce.
+function casualPool() {
+  const pool = [], P = {};
+  const secs = R.casSecs && R.casSecs.length ? new Set(R.casSecs) : null;
+  const ok = s => !secs || secs.has(s === 'cloze' ? 'bosluk' : s);
+  for (const e of OSYM?.exams || []) if (!e.anchor) { for (const p of e.p) P[p.id] = p; for (const q of e.q) if (ok(q.s)) pool.push(q); }
+  for (const q of OSYM?.ornek || []) if (ok(q.s)) pool.push(q);
   const doneGen = new Set(R.runs.filter(r => r.done && r.exam.startsWith('g:')).map(r => r.exam.slice(2)));
-  for (const e of OSYM?.exams || []) if (!e.anchor) { for (const p of e.p) P[p.id] = p; for (const q of e.q) if (q.s === sec || (sec === 'bosluk' && q.s === 'cloze')) pool.push(q); }
-  for (const q of OSYM?.ornek || []) if (q.s === sec) pool.push(q);
-  for (const d of GEN?.denemeler || []) if (doneGen.has(d.id)) { for (const p of d.p) P[p.id] = p; for (const q of d.q) if (q.s === sec) pool.push(q); }
+  for (const d of GEN?.denemeler || []) if (R.casGen || doneGen.has(d.id)) { for (const p of d.p) P[p.id] = p; for (const q of d.q) if (ok(q.s)) pool.push(q); }
   return { pool, P };
 }
 
-function startPractice(sec) {
-  const { pool, P } = practicePool(sec);
-  if (!pool.length) { toast(t('y.poolEmpty')); return; }
+function nextCasual() {
+  const c = ui.cas;
+  if (c.queue.length) { c.q = c.queue.shift(); c.ans = null; return true; }
+  const { pool, P } = casualPool();
+  c.P = P;
+  if (!pool.length) return false;
   const seen = q => R.seen[q.id] || 0;
-  let items;
-  if (sec === 'okuma' || sec === 'bosluk' && pool.some(q => q.p)) {
-    const groups = {};
-    for (const q of pool) { const k = q.p || q.id; (groups[k] = groups[k] || []).push(q); }
-    const gs = Object.values(groups).sort((a, b) => (a.reduce((s, q) => s + seen(q), 0) / a.length) - (b.reduce((s, q) => s + seen(q), 0) / b.length) || Math.random() - 0.5);
-    items = [];
-    for (const g of gs) { if (items.length >= 8) break; items.push(...g); }
-  } else {
-    items = pool.slice().sort((a, b) => seen(a) - seen(b) || Math.random() - 0.5).slice(0, 10);
-  }
-  ui.practice = { sec, items, P, i: 0, ans: {}, ok: 0 };
-  nav('practice');
+  const min = Math.min(...pool.map(seen));
+  const fresh = pool.filter(q => seen(q) === min && q.id !== c.q?.id);
+  const pickQ = (fresh.length ? fresh : pool)[Math.floor(Math.random() * (fresh.length || pool.length))];
+  if (pickQ.p) {
+    // parçalı sorular: parçanın bütün soruları sırayla
+    const group = pool.filter(q => q.p === pickQ.p).sort((a, b) => a.n - b.n);
+    c.q = group[0];
+    c.queue = group.slice(1);
+  } else { c.q = pickQ; c.queue = []; }
+  c.ans = null;
+  return true;
 }
 
-function renderPractice(root, wrap) {
-  const pr = ui.practice;
-  if (pr.i >= pr.items.length) {
-    put(wrap, el('div.kicker', t('y.practice')), el('h1.h1', t('ys.' + pr.sec)),
-      el('div.paper.okp', el('div.yds-score', el('span.mono', `${pr.ok}/${pr.items.length}`), el('span.lab', t('y.correctN')))),
-      el('button.btn.btn-primary.btn-wide', { on: { click: () => startPractice(pr.sec) } }, t('y.again')),
-      el('button.btn.btn-wide', { on: { click: () => { ui.practice = null; nav('home'); } } }, t('y.back')));
-    return;
-  }
-  const q = pr.items[pr.i];
-  const mine = pr.ans[pr.i];
-  const answered = mine != null;
-  const pick = async k => {
+function startCasual() {
+  ui.cas = { q: null, queue: [], ans: null, P: {}, n: 0, ok: 0 };
+  if (!nextCasual()) { toast(t('y.poolEmpty')); ui.cas = null; return; }
+  nav('casual');
+}
+
+function casDay() {
+  const d = dayNum();
+  if (!R.cas || R.cas.day !== d) R.cas = { day: d, n: 0, ok: 0 };
+  return R.cas;
+}
+
+function renderCasual(root, wrap) {
+  const c = ui.cas;
+  const q = c.q;
+  const ctx = (R.cmarks = R.cmarks || {});
+  document.body.classList.add('studying');
+  root.innerHTML = '';
+  const answered = c.ans != null;
+  const day = casDay();
+  const rerender = () => renderCasual(root, wrap);
+  const pick = async (k, strikeOnly) => {
+    if (strikeOnly) return rerender();
     if (answered) return;
-    pr.ans[pr.i] = k;
-    if (k === q.a) { pr.ok++; sfx('stamp'); } else sfx('soft');
+    c.ans = k;
+    day.n++; c.n++;
+    if (k === q.a) { day.ok++; c.ok++; sfx('stamp'); } else sfx('soft');
     R.seen[q.id] = (R.seen[q.id] || 0) + 1;
     await save();
-    go('yds', true);
+    ui._showFb = true;
+    rerender();
   };
-  put(wrap, 
-    el('div.topline', el('button.linkbtn', { on: { click: () => { ui.practice = null; nav('home'); } } }, t('k.quit')), el('span.mono.muted', `${pr.i + 1}/${pr.items.length}`)),
-    el('div.kicker', t('ys.' + pr.sec) + ' · ' + srcLabel(q.id)),
-    q.p && pr.P[q.p] ? passageNode(pr.P[q.p], q) : null,
-    el('div.paper.yds-q',
-      q.t ? el('div.yds-stem' + (q.s === 'diyalog' ? '.dlg' : '') + (/[а-яё]/i.test(q.t) ? '.ru' : ''), stemNode(q.t)) : null,
-      el('div.yds-opts', ...q.o.map((o, j) => el((answered ? 'div' : 'button') + '.yds-opt' + (answered && j === q.a ? '.ok' : '') + (answered && j === mine && j !== q.a ? '.bad' : ''),
-        answered ? {} : { on: { click: () => pick(j) } }, el('span.l.mono', LETTERS[j] + ')'), el('span.tx' + (/[а-яё]/i.test(o) ? '.ru' : ''), o)))),
-      answered ? el('div.meta', mine === q.a ? t('y.right') : t('y.wrongWas', { a: LETTERS[mine], b: LETTERS[q.a] })) : null,
-      answered && q.x ? el('div.yds-x', q.x) : null),
-    answered ? el('button.btn.btn-primary.btn-wide', { on: { click: () => { pr.i++; go('yds', false); } } }, t('y.next')) : null,
+  const reveal = () => { if (answered) return; c.ans = -1; R.seen[q.id] = (R.seen[q.id] || 0) + 1; save(); ui._showFb = true; rerender(); };
+  const frame = el('div.study.yds',
+    el('div.st-top',
+      el('button.iconbtn', { 'aria-label': t('k.quit'), on: { click: () => { document.body.classList.remove('studying'); ui.cas = null; setTool(null); nav('home'); } } }, svg(ICON.x)),
+      el('div.yds-head', el('span.mono', t('y.casualTitle')), el('span.kicker', `${t('ys.' + (q.s === 'cloze' ? 'cloze' : q.s))} · ${srcLabel(q.id)}`)),
+      el('span.mono.yds-timer', t('y.casToday', { n: day.n, ok: day.ok }))),
+    el('div.yds-body',
+      q.p && c.P[q.p] ? passageNode(c.P[q.p], q, ctx) : null,
+      el('div.paper.yds-q',
+        q.t ? el('div.yds-stem' + (q.s === 'diyalog' ? '.dlg' : '') + (/[а-яё]/i.test(q.t) ? '.ru' : ''), stemNode(q, ctx)) : null,
+        el('div.yds-opts', ...q.o.map((_, k) => optionNode(q, k, ctx, answered
+          ? { state: k === q.a ? 'ok' : k === c.ans ? 'bad' : 'none' }
+          : { onPick: pick }))),
+        answered ? el('div.meta', c.ans === -1 ? t('y.shown', { b: LETTERS[q.a] }) : c.ans === q.a ? t('y.right') : t('y.wrongWas', { a: LETTERS[c.ans], b: LETTERS[q.a] })) : null,
+        answered && q.x ? el('div.yds-x', q.x) : null,
+        answered && !q.x && !q.id.startsWith('d') ? el('div.meta.small', t('y.noExpl')) : null)),
+    toolsBar(() => { clearMarks(ctx, q, c.P); rerender(); }),
+    el('div.yds-nav.two',
+      answered ? el('span') : el('button.btn', { on: { click: reveal } }, t('y.reveal')),
+      answered || c.queue.length === 0 ? el('button.btn.btn-primary', { on: { click: () => { if (!nextCasual()) { toast(t('y.poolEmpty')); return; } ui._lastI = null; rerender(); } } }, answered ? t('y.next') : t('y.skip'))
+        : el('button.btn.btn-primary', { on: { click: () => { nextCasual(); rerender(); } } }, t('y.skip'))),
   );
+  bindMarking(frame, ctx);
+  root.append(frame);
+  const body = frame.querySelector('.yds-body');
+  if (body && ui._casQ === q.id && ui._scroll != null) body.scrollTop = ui._scroll;
+  body && body.addEventListener('scroll', () => { ui._scroll = body.scrollTop; });
+  if (ui._casQ !== q.id) ui._scroll = 0;
+  ui._casQ = q.id;
+  if (ui._showFb) { ui._showFb = false; const fb = frame.querySelector('.yds-q .meta'); fb && requestAnimationFrame(() => fb.scrollIntoView({ block: 'center', behavior: 'smooth' })); }
 }
 
 const srcLabel = id => {
