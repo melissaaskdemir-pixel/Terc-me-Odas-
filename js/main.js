@@ -53,14 +53,18 @@ export function applyTheme() {
   document.querySelector('meta[name="theme-color"]').content = th === 'paper' ? '#E9E1CD' : '#121A2B';
 }
 
+const fullH = {};
 function viewport() {
   const vv = window.visualViewport;
   const app = document.getElementById('app');
   const upd = () => {
     const h = vv ? vv.height : window.innerHeight;
     document.documentElement.style.setProperty('--vvh', h + 'px');
-    // klavye açık mı: görünür alan pencereden belirgin biçimde kısaysa
-    document.body.classList.toggle('kb', window.innerHeight - h > 150);
+    // klavye açık mı: bu genişlikte görülen en büyük yükseklikten belirgin biçimde kısaysa.
+    // (iOS ana ekran uygulamasında window.innerHeight klavyeyle bazen küçülüyor; ona güvenilmez)
+    const w = Math.round(vv ? vv.width : window.innerWidth);
+    fullH[w] = Math.max(fullH[w] || 0, h);
+    document.body.classList.toggle('kb', fullH[w] - h > 150);
     app.style.top = (vv ? vv.offsetTop : 0) + 'px';
   };
   if (vv) { vv.addEventListener('resize', upd); vv.addEventListener('scroll', upd); }

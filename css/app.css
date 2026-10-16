@@ -237,7 +237,7 @@ body.kb .st-sub, body.kb .st-in label, body.kb .st-act .send, body.kb .swipehint
 body.kb .st-top .iconbtn { width: 36px; height: 36px; }
 body.kb .st-in { order: 2; }
 body.kb .st-act { order: 1; }
-body.kb .st-act:empty { display: none; }
+body.kb .st-act:empty, body.kb .st-act:not(:has(.btn:not(.send))) { display: none; }
 body.kb .st-act .btn { min-height: 38px; font-size: 15px; border-radius: 19px; }
 body.kb .st-act .btn.btn-ok { min-height: 40px; }
 body.kb .st-in input { height: 48px; font-size: 21px; }
@@ -246,6 +246,10 @@ body.kb .st-card .q { font-size: 21px; }
 body.kb .st-card .v { font-size: 22px; }
 body.kb .st-card .cz { font-size: 20px; line-height: 1.4; }
 body.kb .st-hint { order: 1; font-size: 16px; }
+/* kart, klavye açıkken cevap kutusunun hemen üstüne yaslanır; göz ile başparmak aynı yerde kalır */
+body.kb .st-cardwrap { display: flex; flex-direction: column; }
+body.kb .st-cardwrap > .st-card { margin-top: auto; flex-shrink: 0; }
+body:not(.kb) .st-in input::placeholder { color: transparent; }
 .st-in input::placeholder { color: var(--faint); font-family: 'PT Sans', sans-serif; font-size: 16px; }
 
 /* ---------- mühürler ---------- */
