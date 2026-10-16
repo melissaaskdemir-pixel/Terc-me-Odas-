@@ -282,7 +282,7 @@ async function doRestore() {
 }
 
 async function doImportPack() {
-  const f = await pickFile('.tpk,.json,application/json,application/octet-stream');
+  const f = await pickFile(null); // iOS özel uzantıları (.tpk) seçtirmeyebiliyor; içerik okurken denetleniyor
   if (!f) return;
   toast(t('a.packReading'), 8000);
   try {
