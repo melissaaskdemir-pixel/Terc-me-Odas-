@@ -14,7 +14,7 @@ import { renderOkuma, isReading } from './okuma.js';
 import { renderSozluk } from './sozluk.js';
 import { renderArsiv, backupWarn } from './arsiv.js';
 
-export const APP_VERSION = '0.2.0';
+export const APP_VERSION = '0.2.1';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],
@@ -57,19 +57,34 @@ const fullH = {};
 function viewport() {
   const vv = window.visualViewport;
   const app = document.getElementById('app');
+  // Ana ekran uygulamasında (iOS 26) visualViewport/innerHeight durum çubuğu kadar kısa gelebiliyor; içerik ekranın
+  // en üstünden başladığı için altta boşluk kalıyordu. 100lvh ekranın tamamını verir; klavye kapalıyken onu kullan.
+  const standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+  let probe = null;
+  if (standalone) {
+    probe = document.createElement('div');
+    probe.setAttribute('aria-hidden', 'true');
+    probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:100vh;height:100lvh;visibility:hidden;pointer-events:none;';
+    document.body.append(probe);
+  }
   const upd = () => {
     const h = vv ? vv.height : window.innerHeight;
-    document.documentElement.style.setProperty('--vvh', h + 'px');
     // klavye açık mı: bu genişlikte görülen en büyük yükseklikten belirgin biçimde kısaysa.
     // (iOS ana ekran uygulamasında window.innerHeight klavyeyle bazen küçülüyor; ona güvenilmez)
     const w = Math.round(vv ? vv.width : window.innerWidth);
     fullH[w] = Math.max(fullH[w] || 0, h);
-    document.body.classList.toggle('kb', fullH[w] - h > 150);
-    app.style.top = (vv ? vv.offsetTop : 0) + 'px';
+    const kb = fullH[w] - h > 150;
+    document.body.classList.toggle('kb', kb);
+    const full = probe ? probe.offsetHeight : 0;
+    const H = !kb && full > h && full - h < 140 ? full : h;
+    document.documentElement.style.setProperty('--vvh', H + 'px');
+    app.style.top = (kb && vv ? vv.offsetTop : 0) + 'px';
   };
   if (vv) { vv.addEventListener('resize', upd); vv.addEventListener('scroll', upd); }
   window.addEventListener('resize', upd);
+  window.addEventListener('orientationchange', () => setTimeout(upd, 300));
   upd();
+  setTimeout(upd, 500);
   // iOS: klavye açılınca sayfanın kaymasını engelle
   window.addEventListener('scroll', () => { if (window.scrollY) window.scrollTo(0, 0); });
 }
