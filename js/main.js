@@ -24,6 +24,7 @@ let current = 'masa';
 const scrollPos = {};
 
 export function go(name, keepScroll) {
+  if (waitingSW && !isStudying()) { waitingSW.postMessage('skipWaiting'); }
   const screen = document.getElementById('screen');
   if (!isStudying()) scrollPos[current] = screen.scrollTop;
   current = name;
@@ -58,6 +59,8 @@ function viewport() {
   const upd = () => {
     const h = vv ? vv.height : window.innerHeight;
     document.documentElement.style.setProperty('--vvh', h + 'px');
+    // klavye açık mı: görünür alan pencereden belirgin biçimde kısaysa
+    document.body.classList.toggle('kb', window.innerHeight - h > 150);
     app.style.top = (vv ? vv.offsetTop : 0) + 'px';
   };
   if (vv) { vv.addEventListener('resize', upd); vv.addEventListener('scroll', upd); }
@@ -73,7 +76,8 @@ async function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   try {
     const reg = await navigator.serviceWorker.register('sw.js', { scope: './' });
-    const onWaiting = w => { waitingSW = w; toast(t('u.ready'), 4000); };
+    // yeni sürüm: çalışma sürmüyorsa hemen uygula, sürüyorsa oturum bitince
+    const onWaiting = w => { waitingSW = w; if (!isStudying()) w.postMessage('skipWaiting'); };
     if (reg.waiting && navigator.serviceWorker.controller) onWaiting(reg.waiting);
     reg.addEventListener('updatefound', () => {
       const nw = reg.installing;

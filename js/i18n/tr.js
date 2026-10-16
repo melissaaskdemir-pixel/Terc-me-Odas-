@@ -9,14 +9,14 @@ export default {
 
   // çalışma ekranı
   'st.answer': 'Cevap', 'st.close': 'Oturumu kapat', 'st.combo': 'KOMBO ×{n}', 'st.yourAnswer': 'Cevabın', 'st.again': 'Geri geldi',
-  'st.new': 'Yeni kart', 'st.dontKnow': 'Bilmiyorum', 'st.hint': 'İpucu', 'st.hintAria': 'İpucu: bir harf daha göster', 'st.send': 'Gönder',
+  'st.new': 'Yeni', 'st.dontKnow': 'Bilmiyorum', 'st.hint': 'İpucu', 'st.hintAria': 'İpucu: bir harf daha göster', 'st.send': 'Gönder',
   'st.card': 'Kart', 'st.series': '{s} SERİSİ', 'st.swipe': 'Biliyorsan sola kaydır.', 'st.keyboard': 'Klavye Latin harfte. Rusça klavyeye geç; bu deneme sayılmadı.',
   'st.next': 'Devam', 'st.held': 'Durdu. Devam için Devam\'a bas.', 'st.retype': 'Doğrusunu bir kez yaz', 'st.claim': 'Bence doğruydu',
   'st.typeOnce': 'Bir kez yaz, aklında kalsın', 'st.claimed': 'Bu yazım artık bu kartta doğru sayılacak.',
   'st.partner': 'görünüş çifti', 'st.userAlt': 'senin eklediğin yazım', 'st.youWrote': 'Senin cevabın', 'st.answerIs': 'Cevap',
   'st.correct': 'Doğrusu', 'st.partnerNote': 'Doğru. Bu kartın beklediği biçim: {w}', 'st.gov': 'Yönetim', 'st.pair': 'Görünüş çifti',
   'st.neutral': 'Sade karşılığı', 'st.aspectNote': 'impf.: süreç, tekrar, genel olgu (ne yapıyordu, ne yapar). pf.: tek seferlik, sonuca varan eylem (ne yaptı, ne yapacak).',
-  'st.seriesAll': 'Serinin tamamı', 'st.stressWrong': 'Vurgu yanlış', 'st.stressNoted': 'Not alındı; haftalık rapora eklenecek.', 'st.listen': 'Dinle',
+  'st.seriesAll': 'Serinin tamamı', 'st.stressWrong': 'Vurgu yanlış', 'st.stressNoted': 'Not alındı; haftalık rapora eklenecek.', 'st.listen': 'Dinle', 'st.words': '{n} kelime',
 
   // sonuç etiketleri
   'v.ok': 'DOĞRU', 'v.imla': 'İMLA', 'v.sonek': 'SON EK', 'v.yapi': 'YAPI', 'v.bil': 'BİLMİYORUM',

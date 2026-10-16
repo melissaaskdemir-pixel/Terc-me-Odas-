@@ -51,8 +51,8 @@ function buildFrame() {
   F.act = el('div.st-act');
   const top = el('header.st-top',
     el('button.iconbtn', { 'aria-label': t('st.close'), on: { click: () => finish(true) } }, svg(ICON.x)),
-    el('div.bar', F.bar), F.count);
-  const sub = el('div.st-sub', F.kind, el('span', F.combo, ' ', F.pts));
+    el('div.bar', F.bar), F.count, F.combo);
+  const sub = el('div.st-sub', F.kind, F.pts);
   const inp = el('div.st-in', el('label', { for: 'cevap' }, F.label, F.labelR), F.input);
   F.input.id = 'cevap';
   const root = el('div.study', top, sub, F.cardwrap, F.hint, inp, F.act);
@@ -75,6 +75,12 @@ function updateTop() {
   }
   f.combo.textContent = sess.combo >= 2 ? t('st.combo', { n: sess.combo }) : '';
   f.pts.textContent = sess.stats.pts ? `+${sess.stats.pts}` : '';
+}
+
+// Klavye açıkken etiket satırı gizlenir; aynı metin kutunun içinde görünür
+function setLabel(text) {
+  cur.f.label.textContent = text;
+  cur.f.input.placeholder = text;
 }
 
 function setActions(...btns) {
@@ -108,14 +114,13 @@ function next() {
   const f = cur.f;
   f.input.value = '';
   f.input.className = '';
-  f.input.placeholder = '';
-  f.label.textContent = t('st.yourAnswer');
-  f.labelR.textContent = item.again ? t('st.again') : (item.isNew ? t('st.new') : '');
+  setLabel(t('st.yourAnswer'));
+  f.labelR.textContent = '';
   f.hint.textContent = '';
   setActions(
     el('button.btn', { on: { click: dontKnow } }, t('st.dontKnow')),
     el('button.btn.hint', { 'aria-label': t('st.hintAria'), on: { click: giveHint } }, t('st.hint')),
-    el('button.btn.btn-primary', { on: { click: submit } }, t('st.send')));
+    el('button.btn.btn-primary.send', { on: { click: submit } }, t('st.send')));
   focusInput();
   updateTop();
   audio.sfx('paper');
@@ -144,17 +149,19 @@ function promptNodes() {
   const c = cur.card, ex = cur.ex;
   const out = [];
   const asking = cur.state === 'ask';
+  const nw = ex.show.trim().split(/\s+/).length;
+  const h = c.h && ex.cloze && nw > 1 ? `${c.h} · ${t('st.words', { n: nw })}` : c.h;
   const long = (c.q || '').length > 60;
   switch (c.t) {
     case 'cift':
       out.push(el('div.v.ru', c.v), el('div.qs', c.q), asking ? el('div.hint', c.h) : null);
       break;
     case 'yonetim':
-      out.push(el('div', el('span.v.ru', c.v), el('span.qs', '  ' + c.q)), clozeNode(ex.cloze, cur.fill, cur.fillCls), asking ? el('div.hint', c.h) : null);
+      out.push(el('div', el('span.v.ru', c.v), el('span.qs', '  ' + c.q)), clozeNode(ex.cloze, cur.fill, cur.fillCls), asking ? el('div.hint', h) : null);
       break;
     case 'koll':
     case 'esanlam':
-      out.push(el('div.q' + (long ? '.long' : ''), c.q), clozeNode(ex.cloze, cur.fill, cur.fillCls), asking ? el('div.hint', c.h) : null);
+      out.push(el('div.q' + (long ? '.long' : ''), c.q), clozeNode(ex.cloze, cur.fill, cur.fillCls), asking ? el('div.hint', h) : null);
       break;
     case 'register':
       out.push(el('div.v.ru', c.v), el('div.qs', c.q), asking ? el('div.hint', c.h) : null);
@@ -169,7 +176,7 @@ function promptNodes() {
 
 function renderCard(extra) {
   const card = el('article.paper.st-card.cardin', { 'aria-label': t('st.card'), 'data-id': cur.card.id, 'data-v': String(cur.item.variant || 0) },
-    el('div.ck', el('span', kicker()), el('span', cur.item.again ? '' : '')),
+    el('div.ck', el('span', kicker()), el('span', cur.item.again ? t('st.again') : (cur.item.isNew ? t('st.new') : ''))),
     ...promptNodes(),
     cur.item.isNew && cur.state === 'ask' && !cur.item.again ? el('div.swipehint', t('st.swipe')) : null,
     extra || null);
@@ -276,7 +283,7 @@ function onWrong(r) {
   f.input.classList.add('bad');
   f.input.value = '';
   f.hint.textContent = '';
-  f.label.textContent = t('st.retype');
+  setLabel(t('st.retype'));
   cur.fill = cur.ex.show;
   cur.fillCls = '';
   renderCard(feedback({ verdict: r.res, r }));
@@ -284,7 +291,7 @@ function onWrong(r) {
   audio.sfx('soft');
   setActions(
     el('button.btn', { on: { click: claimRight } }, t('st.claim')),
-    el('button.btn.btn-primary', { on: { click: submit } }, t('st.send')));
+    el('button.btn.btn-primary.send', { on: { click: submit } }, t('st.send')));
   focusInput();
 }
 
@@ -297,12 +304,12 @@ function dontKnow() {
   f.input.value = '';
   f.input.className = '';
   f.hint.textContent = '';
-  f.label.textContent = t('st.typeOnce');
+  setLabel(t('st.typeOnce'));
   cur.fill = cur.ex.show;
   cur.fillCls = '';
   renderCard(feedback({ verdict: 'bil' }));
   if (set('autoplay')) audio.playNow(cur.ex.audio) || audio.play(cur.ex.audio);
-  setActions(el('button.btn.btn-primary', { on: { click: submit } }, t('st.send')));
+  setActions(el('button.btn.btn-primary.send', { on: { click: submit } }, t('st.send')));
   focusInput();
 }
 
@@ -434,7 +441,8 @@ function feedback({ verdict, compact, r }) {
       ex.audio ? el('button.plink', { on: { click: reportStress } }, t('st.stressWrong')) : null,
       c.s ? el('span.lab', { style: { marginLeft: 'auto' } }, c.s) : null));
   }
-  if (verdict !== 'ok' && verdict !== 'bil') {
+  if (verdict !== 'ok' && verdict !== 'bil' && (S.prof.legendN || 0) < 8) {
+    S.prof.legendN = (S.prof.legendN || 0) + 1;
     fb.append(el('div.legend',
       el('span', el('i', { style: { background: 'var(--p-yapi)' } }), t('lg.yapi')),
       el('span', el('i', { style: { background: 'var(--p-sonek)' } }), t('lg.sonek')),

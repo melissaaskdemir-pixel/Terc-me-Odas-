@@ -167,12 +167,17 @@ body.studying #screen { padding: 0; overflow: hidden; display: flex; }
 .bar { flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
 .bar > i { display: block; height: 100%; background: var(--ok3); width: 0; transition: width .25s; }
 .st-count { font-family: 'PT Mono', monospace; font-size: 13px; color: var(--muted); min-width: 52px; text-align: right; }
+.st-top .combo { font-family: 'PT Mono', monospace; font-size: 12px; color: var(--sonek); white-space: nowrap; }
+.st-top .combo:empty { display: none; }
 .st-sub { display: flex; justify-content: space-between; align-items: center; font-family: 'PT Mono', monospace; font-size: 11.5px; letter-spacing: .1em; color: var(--muted); flex-shrink: 0; text-transform: uppercase; }
 .st-sub .combo { color: var(--sonek); }
 .st-sub .pts { color: var(--ok-txt); }
-.st-cardwrap { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 2px 2px 12px; }
+.st-cardwrap { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 2px 2px 14px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent); }
 .st-card { padding: 20px 18px 18px; display: flex; flex-direction: column; gap: 12px; touch-action: pan-y; will-change: transform; }
-.st-card .ck { font-family: 'PT Mono', monospace; font-size: 11px; color: var(--p-kicker); letter-spacing: .1em; text-transform: uppercase; display: flex; justify-content: space-between; gap: 8px; padding-right: 64px; }
+.st-card .ck { font-family: 'PT Mono', monospace; font-size: 11px; color: var(--p-kicker); letter-spacing: .1em; text-transform: uppercase; display: flex; justify-content: space-between; gap: 10px; padding-right: 64px; }
+.st-card .ck span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-card .ck span:last-child { flex-shrink: 0; }
 .st-card .q { font-size: 23px; line-height: 1.3; }
 .st-card .q.long { font-size: 19px; }
 .st-card .qs { font-size: 14px; color: var(--p-muted); }
@@ -225,6 +230,23 @@ body.studying #screen { padding: 0; overflow: hidden; display: flex; }
 .st-act { display: flex; gap: 8px; flex-shrink: 0; }
 .st-act .btn { flex: 1; min-height: 52px; padding: 0 8px; font-size: 16.5px; }
 .st-act .btn.hint { flex: 0 0 auto; min-width: 72px; }
+
+/* ---------- klavye açıkken sıkı düzen: kart alanı büyür ---------- */
+body.kb .study { padding-top: calc(var(--safe-t) + 2px); padding-bottom: 6px; gap: 6px; }
+body.kb .st-sub, body.kb .st-in label, body.kb .st-act .send, body.kb .swipehint { display: none; }
+body.kb .st-top .iconbtn { width: 36px; height: 36px; }
+body.kb .st-in { order: 2; }
+body.kb .st-act { order: 1; }
+body.kb .st-act:empty { display: none; }
+body.kb .st-act .btn { min-height: 38px; font-size: 15px; border-radius: 19px; }
+body.kb .st-act .btn.btn-ok { min-height: 40px; }
+body.kb .st-in input { height: 48px; font-size: 21px; }
+body.kb .st-card { padding: 14px 15px 14px; gap: 9px; }
+body.kb .st-card .q { font-size: 21px; }
+body.kb .st-card .v { font-size: 22px; }
+body.kb .st-card .cz { font-size: 20px; line-height: 1.4; }
+body.kb .st-hint { order: 1; font-size: 16px; }
+.st-in input::placeholder { color: var(--faint); font-family: 'PT Sans', sans-serif; font-size: 16px; }
 
 /* ---------- mühürler ---------- */
 .stamp { position: absolute; top: 14px; right: 12px; transform: rotate(-8deg); border: 2px solid var(--p-ok); color: var(--p-ok); font-family: 'PT Mono', monospace;
