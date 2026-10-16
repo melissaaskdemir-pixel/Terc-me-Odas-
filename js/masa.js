@@ -35,7 +35,9 @@ export function renderMasa(root) {
       el('div.known', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
         el('div.mono.muted', { style: { fontSize: '13px' } }, t('m.known')),
         el('div.v', fmtNum(known)),
-        el('div.d', delta > 0 ? t('m.knownDelta', { n: delta }) : t('m.learning', { n: plan.learningCount() })))),
+        el('div.d', delta > 0 ? t('m.knownDelta', { n: delta }) : t('m.learning', { n: plan.learningCount() })),
+        el('button.linkbtn.kp-link', { on: { click: () => go('kapsam') } },
+          S.prof.vocab ? t('m.vocab', { n: S.prof.vocab.top ? '13.000+' : fmtNum(S.prof.vocab.n) }) : t('m.vocabTest')))),
 
     el('button.btn.btn-primary.btn-big', { on: { click: () => startStudy('gunun', {}, () => go('masa')) } },
       el('span', left > 0 ? (day.n ? t('m.continueSet') : t('m.openSet')) : t('m.extraSet')),

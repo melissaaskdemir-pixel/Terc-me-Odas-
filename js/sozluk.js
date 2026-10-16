@@ -33,6 +33,13 @@ export function loadIndex() {
   return ixP;
 }
 
+let RANKS = null;
+export async function rankMap() {
+  await loadIndex();
+  if (!RANKS) { RANKS = new Map(); for (const x of IX) if (x[2] && !RANKS.has(x[0])) RANKS.set(x[0], x[2]); }
+  return RANKS;
+}
+
 export function shardName(key) {
   let k = nz(key).slice(0, 2);
   if (k.length < 2) k += '_';

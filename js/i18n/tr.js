@@ -62,6 +62,26 @@ export default {
   'm.installClose': 'Kapat',
   'm.freezeUsed': 'Kaçırılan {n} gün için seri dondurma kullanıldı; serin korundu.',
 
+  'm.vocab': 'Dağarcık ≈ {n} ›', 'm.vocabTest': 'Kelime kapsamın ›',
+
+  // kelime kapsamı
+  'k.kicker': 'KELİME KAPSAMI', 'k.title': 'Ne kadarını anlarsın?', 'k.yds': 'YDS metinleri', 'k.gun': 'Gündelik dil',
+  'k.slider': 'Bilinen kelime sayısı', 'k.chartAria': 'Kelime sayısına göre metin kapsama eğrisi', 'k.you': 'sen',
+  'k.words': '{n} kelime', 'k.covYds': 'YDS metinlerindeki kelimelerin %{p}\'i', 'k.covGun': 'gündelik metinlerdeki kelimelerin %{p}\'i',
+  'k.hidden': 'bilinmeyen kelime', 'k.sampleNote': 'Bu paragrafta görünen: %{p}. Kaynak: {src} (Rusça Vikipedi). Özel adlar karartılmaz.',
+  'k.other': 'Başka paragraf', 'k.myKicker': 'SENİN DAĞARCIĞIN', 'k.wordsShort': 'kelime', 'k.over': '{n}+ kelime',
+  'k.myLine': 'Bu, YDS metinlerinin %{y}\'i, gündelik metinlerin %{g}\'i demek. Test: {d}.',
+  'k.noTest': 'İki dakikalık testle kaç kelime bildiğini tahmin edelim; eğride yerin işaretlensin.', 'k.test': 'Kelime testini yap', 'k.retest': 'Testi yeniden yap',
+  'k.how': 'Eğri, sıklık listesindeki ilk N kelimeyi bilen birinin metinlerdeki kelimelerin yüzde kaçını tanıyacağını gösterir. YDS eğrisi 2014–2019 sınavlarının ve 2026 örneğinin metinlerinden hesaplandı. Sıklık listesi 13 bin kelimede bitiyor; YDS metinlerindeki daha seyrek akademik kelimeler bu yüzden eğrinin %90\'da düzleşmesine yol açıyor.',
+  'k.back': 'Eğri', 'k.testKicker': 'KELİME TESTİ', 'k.testTitle': 'Kaç kelime biliyorsun?',
+  'k.testIntro': '{n} kelime göreceksin, kolaydan zora. Anlamını biliyorsan "Biliyorum", emin değilsen "Bilmiyorum". Aralarında Rusçada olmayan uydurma kelimeler var; onlara "Biliyorum" dersen tahmin buna göre düşürülür. Çeviri sorulmuyor, dürüst ol yeter.',
+  'k.start': 'Başla', 'k.q': 'ANLAMINI BİLİYOR MUSUN?', 'k.no': 'Bilmiyorum', 'k.yes': 'Biliyorum', 'k.undo': '‹ Önceki kelime', 'k.quit': 'Vazgeç',
+  'k.testHint': 'Tanıdık gelmesi yetmez: duyduğunda ya da okuduğunda anlamını çıkarabiliyorsan biliyorsun say.',
+  'k.resKicker': 'TEST SONUCU', 'k.resYds': 'YDS metinlerindeki kelimelerin %{p}\'ini tanıyorsun.', 'k.resGun': 'Gündelik metinlerde: %{p}.',
+  'k.resFa': 'Uydurma kelimelerden {a}/{b} tanesine "Biliyorum" dedin; tahmin buna göre düzeltildi.',
+  'k.resTop': 'En zor iki bantta da çoğunu bildin: dağarcığın sıklık listesinin bittiği 13 binin üstünde. YDS\'de seni zorlayacak kelimeler bu listenin dışındaki akademik ve basın kelimeleri.',
+  'k.bandsNote': 'Her sütun bin kelimelik bir sıklık bandı (soldan sağa 1–1000, 1001–2000 …): o bantta bildiğin oran.', 'k.toCurve': 'Eğriye dön',
+
   // brifing
   'b.week': 'HAFTA', 'b.activity': 'Faaliyet: {n} cevap, {active} aktif gün, halka {goal} gün kapandı.',
   'b.accuracy': 'İlk denemede doğruluk %{p}. Yeni kart: {nw}. Puan: {pts}.',

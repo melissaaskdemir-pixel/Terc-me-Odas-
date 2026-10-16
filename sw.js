@@ -1,5 +1,5 @@
 // Tercüme Odası servis çalışanı: uygulama kabuğu ve içerik internetsiz çalışsın diye önbellekte tutulur.
-const VERSION = '74993ec87c';
+const VERSION = 'd03f9d09d0';
 const SHELL = 'kabuk-' + VERSION;
 const AUDIO = 'ses-v1';
 const FILES = [
@@ -15,6 +15,7 @@ const FILES = [
  "./js/decks.js",
  "./js/fsrs.js",
  "./js/i18n.js",
+ "./js/kapsam.js",
  "./js/main.js",
  "./js/masa.js",
  "./js/okuma.js",
@@ -45,6 +46,7 @@ const FILES = [
  "./icons/icon-192.png",
  "./icons/icon-512.png",
  "./icons/icon-maskable-512.png",
+ "./data/kapsam.json",
  "./data/kendi.json",
  "./data/morph.json",
  "./data/okuma.json",

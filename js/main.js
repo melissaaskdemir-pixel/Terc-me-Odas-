@@ -13,12 +13,14 @@ import { renderCalis } from './calis.js';
 import { renderOkuma, isReading } from './okuma.js';
 import { renderSozluk } from './sozluk.js';
 import { renderArsiv, backupWarn } from './arsiv.js';
+import { renderKapsam } from './kapsam.js';
 
-export const APP_VERSION = '0.2.2';
+export const APP_VERSION = '0.2.3';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],
   ['sozluk', 'tab.sozluk', renderSozluk], ['arsiv', 'tab.arsiv', renderArsiv],
+  ['kapsam', 'tab.masa', renderKapsam, true],   // sekme çubuğunda görünmez
 ];
 let current = 'masa';
 const scrollPos = {};
@@ -38,8 +40,9 @@ export function go(name, keepScroll) {
 function renderTabs() {
   const nav = document.getElementById('tabs');
   nav.innerHTML = '';
-  for (const [k, lab] of TABS) {
-    const b = el('button', { 'aria-current': k === current ? 'page' : null, on: { click: () => go(k) } }, svg(ICON[k]), t(lab));
+  for (const [k, lab, , hidden] of TABS) {
+    if (hidden) continue;
+    const b = el('button', { 'aria-current': k === current || (k === 'masa' && current === 'kapsam') ? 'page' : null, on: { click: () => go(k) } }, svg(ICON[k]), t(lab));
     if (k === 'arsiv' && backupWarn()) b.append(el('span.dot', { 'aria-label': t('a.bkDot') }));
     nav.append(b);
   }

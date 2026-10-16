@@ -515,6 +515,16 @@ export async function lemmaInfo(lemma) {
   return { au, ex: ex.slice(0, 3) };
 }
 
+// Kapsam ekranı için örnek metinler: özgün paragraflar
+export async function sampleTexts() {
+  await loadOkuma();
+  const out = [];
+  for (const f of DATA.files) f.paras.forEach((p, i) => out.push({
+    title: `${f.title}, § ${i + 1}`, sents: p.o.map(s => s.ru), lemma: lw => DATA.tok[lw]?.l || lw,
+  }));
+  return out;
+}
+
 export async function okumaAudioKeys() {
   await loadOkuma();
   const keys = new Set();
