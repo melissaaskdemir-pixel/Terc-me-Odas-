@@ -110,8 +110,11 @@ export default {
   'o.endOffer': 'Günün paragrafı hazır: {p}', 'o.endGo': 'Okumaya geç',
 
   // sözlük
-  's.kicker': 'SÖZLÜK', 's.title': 'Sözlük', 's.ph': 'Rusça, Türkçe ya da İngilizce ara', 's.info2': '{n} madde, {c} kart. Herhangi bir çekimli biçimi yazabilirsin.',
-  's.loading': 'Sözlük yükleniyor…', 's.inCards': 'Kartlarında', 's.inDict': 'Sözlükte', 's.offline': 'Bu harfler internetsiz indirilmemiş. Arşiv > Ayarlar > Sözlük\'ten indirebilirsin.',
+  's.kicker': 'SÖZLÜK', 's.title': 'Sözlük', 's.ph': 'Rusça, Türkçe ya da İngilizce yaz', 's.info2': '{n} madde, {c} kart. Herhangi bir çekimli biçimi yazabilirsin.',
+  's.loading': 'Sözlük yükleniyor…', 's.recent': 'Son baktıkların', 's.tapped': 'Okurken dokunduğun kelimeler', 's.tapN': '{n} kez',
+  's.freq': 'Sık kullanılan kelimeler', 's.freqNote': 'Sıklık sırasına göre. 2000\'e kadar Türkçe karşılık var, sonrası İngilizce. Dokununca madde açılır; desteye oradan ekleyebilirsin.',
+  's.onlyNew': 'Kartta olmayan', 's.more30': '30 kelime daha', 's.inCardsTag': 'kartta', 's.searching': 'Aranıyor…',
+  's.partial': 'İnternet yok: sadece sık kelimelerde arandı. Tam arama için Arşiv > Ayarlar > Sözlük\'ü indir.', 's.inCards': 'Kartlarında', 's.inDict': 'Sözlükte', 's.offline': 'Bu harfler internetsiz indirilmemiş. Arşiv > Ayarlar > Sözlük\'ten indirebilirsin.',
   's.hits': '{n} sonuç', 's.none': 'Sonuç yok.', 's.noEntry': '"{w}" sözlükte yok.',
   's.note2': 'Sözlük verisi OpenRussian (CC BY-SA). Sık kullanılan 2.000 kelimenin ve okuma dosyalarındaki kelimelerin Türkçesi var; diğerlerinde İngilizce karşılık görünür.',
   's.pN': 'isim', 's.pV': 'fiil', 's.pA': 'sıfat', 's.pO': 'diğer', 's.anim': 'canlı', 's.indecl': 'çekimsiz', 's.rank': 'sıklık #{n}',

@@ -14,7 +14,7 @@ import { renderOkuma, isReading } from './okuma.js';
 import { renderSozluk } from './sozluk.js';
 import { renderArsiv, backupWarn } from './arsiv.js';
 
-export const APP_VERSION = '0.2.1';
+export const APP_VERSION = '0.2.2';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],
@@ -57,8 +57,9 @@ const fullH = {};
 function viewport() {
   const vv = window.visualViewport;
   const app = document.getElementById('app');
-  // Ana ekran uygulamasında (iOS 26) visualViewport/innerHeight durum çubuğu kadar kısa gelebiliyor; içerik ekranın
-  // en üstünden başladığı için altta boşluk kalıyordu. 100lvh ekranın tamamını verir; klavye kapalıyken onu kullan.
+  // iOS 26 ana ekran uygulamasında web görünümü bazen durum çubuğu kadar kısa kalıyor ve altındaki şerit
+  // çizilemiyor. Bu durumda alt güvenli alan payı (ev çubuğu) zaten görünür alanın dışında: payı sıfırla ki
+  // sekme çubuğu görünür alanın en altına otursun.
   const standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
   let probe = null;
   if (standalone) {
@@ -69,16 +70,18 @@ function viewport() {
   }
   const upd = () => {
     const h = vv ? vv.height : window.innerHeight;
+    document.documentElement.style.setProperty('--vvh', h + 'px');
     // klavye açık mı: bu genişlikte görülen en büyük yükseklikten belirgin biçimde kısaysa.
     // (iOS ana ekran uygulamasında window.innerHeight klavyeyle bazen küçülüyor; ona güvenilmez)
     const w = Math.round(vv ? vv.width : window.innerWidth);
     fullH[w] = Math.max(fullH[w] || 0, h);
     const kb = fullH[w] - h > 150;
     document.body.classList.toggle('kb', kb);
-    const full = probe ? probe.offsetHeight : 0;
-    const H = !kb && full > h && full - h < 140 ? full : h;
-    document.documentElement.style.setProperty('--vvh', H + 'px');
-    app.style.top = (kb && vv ? vv.offsetTop : 0) + 'px';
+    if (!kb && probe) {
+      const gap = probe.offsetHeight - h;
+      document.body.classList.toggle('shortvp', gap > 20 && gap < 140);
+    }
+    app.style.top = (vv ? vv.offsetTop : 0) + 'px';
   };
   if (vv) { vv.addEventListener('resize', upd); vv.addEventListener('scroll', upd); }
   window.addEventListener('resize', upd);

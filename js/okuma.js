@@ -324,6 +324,7 @@ function tapWord(w, k, x, p) {
   const L = lookupId(ui.id);
   const s = st(ui.id);
   const counting = !ui.done && s.r < ROUNDS && !(s.r > 0 && s.due > dayNum());
+  rememberTap(lw);
   if (!ui.taps.has(lw)) {
     ui.taps.add(lw);
     document.querySelectorAll('.okt .w').forEach(n => { if (n.firstChild?.textContent?.toLowerCase() === lw) n.classList.add('t'); });
@@ -485,6 +486,21 @@ const snippet = s => (s.length > 34 ? s.slice(0, 33).replace(/\s+\S*$/, '') + '�
 
 
 // ---------------------------------------------------------------- sözlük ve indirme için
+// Okurken dokunulan kelimeler (lemma) — sözlüğün boş ekranında listelenir
+function rememberTap(lw) {
+  const l = DATA.tok[lw]?.l || lw;
+  P.seen = P.seen || {};
+  const x = P.seen[l] || (P.seen[l] = { n: 0 });
+  x.n++; x.at = Date.now();
+  save();
+}
+export async function tappedLemmas(n = 12) {
+  await loadOkuma();
+  const tr = {};
+  for (const v of Object.values(DATA.tok)) if (v.l && !tr[v.l]) tr[v.l] = v.tr || v.en || '';
+  return Object.entries(P.seen || {}).sort((a, b) => b[1].at - a[1].at).slice(0, n).map(([l, x]) => ({ l, n: x.n, tr: tr[l] || '' }));
+}
+
 export async function lemmaInfo(lemma) {
   await loadOkuma();
   const forms = Object.entries(DATA.tok).filter(([, v]) => v.l === lemma);

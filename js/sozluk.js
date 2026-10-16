@@ -10,7 +10,8 @@ import * as audio from './audio.js';
 import { modal, toast } from './ui.js';
 import { startStudy } from './study.js';
 import { go } from './main.js';
-import { lemmaInfo } from './okuma.js';
+import { lemmaInfo, tappedLemmas } from './okuma.js';
+import * as db from './db.js';
 
 let lastQ = '';
 let cardIndex = null;
@@ -110,8 +111,11 @@ export async function downloadDict(onProgress) {
 }
 
 // ---------------------------------------------------------------- arama
+let cardLemmas = new Set();
 function buildCardIndex() {
   cardIndex = [];
+  cardLemmas = new Set();
+  for (const c of CARDS.values()) { if (c.f) cardLemmas.add(c.f); if (c.a && c.a[0]) cardLemmas.add(c.a[0]); }
   for (const c of CARDS.values()) {
     const ru = [c.f, c.v, ...(c.a || []), ...((c.cz || []).flatMap(z => z.a))].filter(Boolean).join(' ');
     cardIndex.push({ c, ru: norm(ru), tr: (c.q + ' ' + (c.qs || '')).toLocaleLowerCase('tr') });
@@ -119,10 +123,12 @@ function buildCardIndex() {
 }
 
 function cardHits(q) {
-  const qr = norm(q), qt = q.toLocaleLowerCase('tr');
+  // kelime başında eşleşme (alt dizgi eşleşmesi kısa aramalarda gürültü yapıyordu)
+  const qr = ' ' + norm(q), qt = ' ' + q.toLocaleLowerCase('tr');
   const hits = [];
   for (const x of cardIndex) {
-    const i = Math.min(...[qr && x.ru.indexOf(qr), x.tr.indexOf(qt)].filter(v => v !== '' && v >= 0).concat([1e9]));
+    const a = (' ' + x.ru).indexOf(qr), b = (' ' + x.tr.replace(/[(),;]/g, ' ')).indexOf(qt);
+    const i = Math.min(...[a, b].filter(v => v >= 0).concat([1e9]));
     if (i < 1e9) hits.push({ x, score: (i === 0 ? 0 : 1) + (x.c.f || '').length / 200 });
   }
   return hits.sort((a, b) => a.score - b.score).map(h => h.x.c);
@@ -183,40 +189,79 @@ function trHits(q) {
   return res.sort((a, b) => a.s - b.s).slice(0, 50).map(r => r.x);
 }
 
+// ---------------------------------------------------------------- son bakılanlar
+let REC = null;
+async function recent() {
+  if (!REC) { try { REC = (await db.get('kv', 'sozluk')) || {}; } catch (e) { REC = {}; } REC.r = REC.r || []; }
+  return REC.r;
+}
+async function addRecent(e) {
+  const r = await recent();
+  const i = r.findIndex(x => x.l === e.l && x.p === e.p);
+  if (i >= 0) r.splice(i, 1);
+  r.unshift({ l: e.l, p: e.p, g: e.tr || shortEn(e.en) || '' });
+  r.length = Math.min(r.length, 12);
+  try { await db.put('kv', REC, 'sozluk'); } catch (err) {}
+}
+
 // ---------------------------------------------------------------- ekran
+const ui = { freqN: 30, onlyNew: false, range: 0 };
+try { ui.range = +(localStorage.getItem('sozlukRange') || 0) || 0; } catch (e) {}
+
+const ixRow = x => el('button.res', { on: { click: () => openEntry(x[0], null, x[1]) } },
+  el('span', el('span.ru', x[0]), cardLemmas.has(x[0]) ? el('span.slot', ' · ' + t('s.inCardsTag')) : null),
+  el('span.tr', x[3] || x[4]));
+
+function ixPrefix(q, n = 40) {
+  const nq = nz(q);
+  const out = [];
+  for (const x of IX) { if (nz(x[0]).startsWith(nq)) { out.push(x); if (out.length >= n) break; } }
+  return out;
+}
+
+async function emptyState(box) {
+  box.innerHTML = '';
+  const [rec, taps] = await Promise.all([recent(), tappedLemmas(10).catch(() => [])]);
+  if (rec.length) box.append(el('div.kicker', t('s.recent')), el('div.list', ...rec.slice(0, 8).map(x =>
+    el('button.res', { on: { click: () => openEntry(x.l, null, x.p) } }, el('span.ru', x.l), el('span.tr', x.g)))));
+  if (taps.length) box.append(el('div.kicker', t('s.tapped')), el('div.list', ...taps.map(x =>
+    el('button.res', { on: { click: () => openEntry(x.l) } },
+      el('span', el('span.ru', x.l), el('span.slot', ' · ' + t('s.tapN', { n: x.n }))), el('span.tr', x.tr)))));
+  // sıklık listesi
+  const RANGES = [[1, 2000, '1–2000'], [2001, 5000, '2000–5000'], [5001, 1e9, '5000+']];
+  const rg = RANGES[ui.range] || RANGES[0];
+  const rows = [];
+  for (const x of IX) {
+    if (!x[2]) break;
+    if (x[2] < rg[0] || x[2] > rg[1]) continue;
+    if (ui.onlyNew && cardLemmas.has(x[0])) continue;
+    rows.push(x);
+    if (rows.length >= ui.freqN) break;
+  }
+  const rerun = () => { ui.freqN = 30; try { localStorage.setItem('sozlukRange', String(ui.range)); } catch (e) {} emptyState(box); };
+  box.append(el('div.kicker', t('s.freq')), el('div.note', t('s.freqNote')),
+    el('div.topline',
+      el('div.seg', { role: 'group' }, ...RANGES.map((r, i) => el('button', { 'aria-pressed': String(i === (ui.range || 0)), on: { click: () => { ui.range = i; rerun(); } } }, r[2]))),
+      el('button.chip', { 'aria-pressed': String(ui.onlyNew), on: { click: () => { ui.onlyNew = !ui.onlyNew; rerun(); } } }, t('s.onlyNew'))),
+    el('div.list', ...rows.map(x => el('button.res.freq', { on: { click: () => openEntry(x[0], null, x[1]) } },
+      el('span', el('span.ru', x[0]), cardLemmas.has(x[0]) ? el('span.slot', ' · ' + t('s.inCardsTag')) : null),
+      el('span.tr', x[3] || x[4]), el('span.rk.mono', '#' + x[2])))),
+    rows.length >= ui.freqN ? el('button.btn.btn-wide', { on: { click: () => { ui.freqN += 30; emptyState(box); } } }, t('s.more30')) : null);
+}
+
 export function renderSozluk(root) {
   if (!cardIndex || cardIndex.length !== CARDS.size) buildCardIndex();
   const input = el('input.search', { type: 'search', placeholder: t('s.ph'), autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', value: lastQ });
   const list = el('div.sect');
   const info = el('div.note');
   let seq = 0;
-  const run = async () => {
-    const my = ++seq;
-    lastQ = input.value;
-    const q = input.value.trim();
-    if (q.length < 2) {
-      list.innerHTML = '';
-      info.textContent = IX ? t('s.info2', { n: '58 bin', c: CARDS.size }) : t('s.loading');
-      return;
-    }
-    const cards = cardHits(q).slice(0, 6);
-    let dict = [], offline = false, exact = 0, isRu = CYR.test(q);
-    try {
-      await loadIndex();
-      if (isRu) { const r = await ruHits(q); dict = r.out; offline = !!r.offline; exact = r.exact || 0; }
-      else dict = trHits(q).map(x => ({ ix: x }));
-    } catch (e) { offline = true; }
-    if (my !== seq) return;
+  const showDict = (cards, dict, exact, q) => {
     list.innerHTML = '';
     if (cards.length) list.append(el('div.kicker', t('s.inCards')), el('div.list', ...cards.map(c =>
       el('button.res', { on: { click: () => showCard(c.id) } }, el('span.ru', c.f || c.v), el('span.tr', c.q)))));
     if (dict.length) {
       list.append(el('div.kicker', t('s.inDict')), el('div.list', ...dict.slice(0, 50).map((d, i) => {
-        if (d.ix) {
-          const x = d.ix;
-          return el('button.res', { on: { click: () => openEntry(x[0], null, x[1]) } }, el('span.ru', x[0]),
-            el('span.tr', x[3] || x[4]));
-        }
+        if (d.ix) return ixRow(d.ix);
         const e = d.e;
         const lab = d.slot != null && d.slot >= 0 ? slotLabel(e, d.slot) : null;
         return el('button.res' + (i < exact ? '.exact' : ''), { on: { click: () => openEntry(e.l, nz(q), e.p) } },
@@ -224,14 +269,46 @@ export function renderSozluk(root) {
           el('span.tr', e.tr || shortEn(e.en) || ''));
       })));
     }
+  };
+  const run = async () => {
+    const my = ++seq;
+    lastQ = input.value;
+    const q = input.value.trim();
+    if (!q) {
+      info.textContent = t('s.info2', { n: '58 bin', c: CARDS.size });
+      try { await loadIndex(); } catch (e) { info.textContent = t('s.offline'); return; }
+      if (my === seq) emptyState(list);
+      return;
+    }
+    const cards = q.length >= 2 ? cardHits(q).slice(0, 6) : [];
+    const isRu = CYR.test(q);
+    try { await loadIndex(); } catch (e) { info.textContent = t('s.offline'); return; }
+    if (my !== seq) return;
+    // anında: sıklık dizininden baş eşleşmesi
+    if (isRu) {
+      const quick = ixPrefix(q).map(x => ({ ix: x }));
+      showDict(cards, quick, 0, q);
+      info.textContent = quick.length || cards.length ? t('s.hits', { n: cards.length + quick.length }) : t('s.searching');
+      if (q.length < 2) return;
+    }
+    let dict = [], offline = false, exact = 0;
+    try {
+      if (isRu) { const r = await ruHits(q); dict = r.out; offline = !!r.offline; exact = r.exact || 0; }
+      else dict = trHits(q).map(x => ({ ix: x }));
+    } catch (e) { offline = true; }
+    if (my !== seq) return;
+    if (isRu && offline && !dict.length) {
+      // parça yoksa sıklık dizini sonuçları kalsın
+      if (list.childElementCount) { info.textContent = t('s.partial'); return; }
+    }
+    showDict(cards, dict, exact, q);
     info.textContent = !cards.length && !dict.length ? (offline ? t('s.offline') : t('s.none'))
       : t('s.hits', { n: cards.length + Math.min(dict.length, 50) });
   };
   let tm = null;
-  input.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(run, 120); });
+  input.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(run, 90); });
   root.append(el('div.wrap', el('div.kicker', t('s.kicker')), el('h1.h1', t('s.title')), input, info, list,
     el('div.note', t('s.note2'))));
-  loadIndex().then(() => { if (!lastQ) run(); }).catch(() => {});
   run();
   if (pendingOpen) {
     const p = pendingOpen; pendingOpen = null;
@@ -284,6 +361,7 @@ export async function openEntry(lemma, form, pos) {
     toast(t('s.noEntry', { w: lemma }));
     return;
   }
+  addRecent(e);
   const fs = formsOf(e);
   const me = form ? nz(form) : null;
   const info = await lemmaInfo(e.l).catch(() => null);
