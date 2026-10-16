@@ -301,7 +301,7 @@ body.studying .toast { bottom: auto; top: calc(var(--safe-t) + 64px); }
 .tbl { width: 100%; border-collapse: collapse; font-size: 15px; }
 .tbl th { text-align: left; font-family: 'PT Mono', monospace; font-weight: 400; font-size: 11px; letter-spacing: .08em; color: var(--p-kicker); padding: 6px 4px; border-bottom: 1px solid var(--p-line); }
 .tbl td { padding: 6px 4px; border-bottom: 1px solid var(--p-line); font-family: 'PT Serif', serif; vertical-align: top; }
-.tbl td.k { font-family: 'PT Mono', monospace; font-size: 12px; color: var(--p-kicker); width: 54px; }
+.tbl td.k { font-family: 'PT Mono', monospace; font-size: 12px; color: var(--p-kicker); width: 1%; white-space: nowrap; padding-right: 12px; }
 .tbl td.hit { color: var(--accent); font-weight: 700; }
 
 /* ---------- hata defteri ---------- */
@@ -324,3 +324,66 @@ body.studying .toast { bottom: auto; top: calc(var(--safe-t) + 64px); }
   .st-act .btn { min-height: 46px; }
   .study { gap: 7px; }
 }
+
+/* ---------- okuma odası ---------- */
+.ok-head { display: flex; flex-direction: column; gap: 6px; }
+.ok-title { font-size: 26px; font-weight: 700; line-height: 1.2; margin: 0; }
+.ok-sub { color: var(--muted); font-size: 15px; }
+.ok-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.ok-round { font-size: 12px; letter-spacing: .1em; color: var(--muted); }
+.ok-pretog { display: flex; justify-content: space-between; align-items: center; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 8px 0; min-height: 40px; width: 100%; }
+.ok-pre { display: flex; flex-direction: column; }
+.ok-pre .pw { display: flex; gap: 10px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.ok-pre .pw .w { font-size: 21px; }
+.ok-pre .pw .tr { color: var(--muted); font-size: 15px; }
+.ok-pre .pw .ex { font-size: 17px; margin-top: 4px; }
+.ok-pre .pwb { display: flex; flex-direction: column; gap: 6px; }
+.pbtn.dark { border-color: var(--line2); color: var(--ink); }
+.pbtn.sm { height: 32px; min-width: 32px; padding: 0 8px; }
+.pbtn.sm svg { width: 15px; height: 15px; }
+.okp { padding: 22px 18px 16px; display: flex; flex-direction: column; gap: 16px; }
+.okt { font-family: 'PT Serif', Georgia, serif; font-size: 20px; line-height: 1.8; color: var(--p-ink); overflow-wrap: break-word; }
+.okt.orig { line-height: 1.95; }
+.okt .os { border-radius: 3px; padding: 3px 0; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-color .15s; }
+.okt .os.on { background: color-mix(in srgb, var(--accent) 11%, transparent); }
+.okt .os.play { background: color-mix(in srgb, var(--ok2) 30%, transparent); }
+.okt .w { cursor: pointer; }
+.okt .w.t { text-decoration: underline; text-decoration-color: var(--p-yapi); text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+.okt .w.rare { position: relative; }
+.okt .w.rare .rg { position: absolute; left: 0; top: 100%; margin-top: -3px; font-family: 'PT Sans', sans-serif; font-size: 11px; line-height: 1;
+  color: var(--p-muted); white-space: nowrap; pointer-events: none; letter-spacing: .01em; }
+.ok-tr { font-family: 'PT Sans', sans-serif; font-size: 15px; line-height: 1.45; color: var(--p-muted); margin: 6px 0 12px; padding-left: 10px; border-left: 2px solid var(--p-line); }
+.ok-dec { font-family: 'PT Sans', sans-serif; display: flex; flex-direction: column; gap: 10px; margin: 8px 0 14px; padding: 12px; background: var(--paper2); border-radius: 4px; }
+.ok-dec .dp { display: flex; flex-direction: column; gap: 2px; padding-left: 10px; border-left: 3px solid var(--p-line); }
+.ok-dec .dp.core { border-left-color: var(--accent); }
+.ok-dec .lab { font-family: 'PT Mono', monospace; font-size: 10.5px; letter-spacing: .08em; color: var(--p-kicker); text-transform: uppercase; }
+.ok-dec .r { font-size: 17.5px; line-height: 1.35; color: var(--p-ink); }
+.ok-dec .t { font-size: 14px; color: var(--p-muted); }
+.ok-src { font-size: 12.5px; color: var(--p-muted); line-height: 1.4; border-top: 1px solid var(--p-line); padding-top: 10px; }
+.ok-src a, .ok-file a { color: inherit; }
+.ok-tool { position: sticky; bottom: 0; margin: 0 -16px -28px; padding: 6px 10px 8px; background: var(--bg); border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; z-index: 5; }
+.ok-tool .tb { min-height: 46px; border: 1px solid var(--line2); border-radius: 6px; background: none; font-family: 'PT Mono', monospace; font-size: 12px;
+  letter-spacing: .06em; display: flex; align-items: center; justify-content: center; padding: 0; }
+.ok-tool .tb svg { width: 20px; height: 20px; }
+.ok-tool .tb .flip, .ok-tool .tb svg.flip { transform: scaleX(-1); }
+.ok-tool .tb[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.ok-tool .tb[disabled] { opacity: .35; }
+.ok-done { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.ok-done .stamp.big { align-self: flex-start; transform: rotate(-4deg); }
+.ok-file { padding: 16px 16px 12px; display: flex; flex-direction: column; gap: 6px; }
+.ok-file .stamp { top: 12px; right: 10px; }
+.ok-paras { display: flex; flex-direction: column; margin-top: 6px; border-top: 1px solid var(--p-line); }
+.ok-prow { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; align-items: center; min-height: 48px; border: 0; border-bottom: 1px solid var(--p-line);
+  background: none; color: var(--p-ink); text-align: left; padding: 6px 0; }
+.ok-prow .n { font-size: 12px; color: var(--p-kicker); }
+.ok-prow .sn { font-size: 15.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ok-prow .rt { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-size: 11.5px; color: var(--p-muted); }
+.ok-dots { display: inline-flex; gap: 3px; }
+.ok-dots i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--p-muted); display: inline-block; }
+.ok-dots i.o { border-radius: 1px; }
+.ok-dots i.on { background: var(--p-ok); border-color: var(--p-ok); }
+.paper .meta.small { font-size: 12.5px; }
+.res .slot { font-family: 'PT Mono', monospace; font-size: 11.5px; color: var(--muted); }
+.res.exact .ru { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 4px; }
+.elink { background: none; border: 0; padding: 0 2px; color: inherit; text-decoration: underline; text-underline-offset: 3px; font-size: inherit; font-family: inherit; }

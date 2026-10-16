@@ -7,6 +7,8 @@ import { check, norm, tokens, charMarks, hintText, tagsLabel, morphReady } from 
 import * as plan from './plan.js';
 import * as audio from './audio.js';
 import { bigStamp, toast } from './ui.js';
+import { go } from './main.js';
+import { okumaToday, okumaLabel } from './okuma.js';
 
 const TYPE_LABEL = {
   kelime: 'type.kelime', kalip: 'type.kalip', baglac: 'type.baglac', terim: 'type.terim', cift: 'type.cift',
@@ -552,12 +554,25 @@ function endScreen() {
     sess._exhausted && day.n < goal ? el('div.panel.sect', el('div.note', t('end.empty')),
       el('button.btn.btn-sm', { on: { click: async () => { await plan.addExtraNew(10); more(); } } }, t('c.extra10'))) : null,
     ...evs.map(x => el('div.panel', x)),
+    readOffer(),
     el('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' } },
       canMore ? el('button.btn.btn-primary.btn-wide', { on: { click: more } }, t('end.more')) : null,
       el('button.btn.btn-wide', { on: { click: exit } }, t('end.enough'))),
   ));
   screen.append(wrap);
   void first;
+}
+
+// Günün okuma paragrafı bekliyorsa oturum sonunda öner
+function readOffer() {
+  const box = el('div.panel.sect.hidden');
+  okumaToday().then(q => {
+    if (!q || !q.list.length) return;
+    box.append(el('div.note', t('o.endOffer', { p: okumaLabel(q.list[0]) })),
+      el('button.btn.btn-sm', { on: { click: () => { const cb = () => go('okuma'); cur.onExit = cb; exit(); } } }, t('o.endGo')));
+    box.classList.remove('hidden');
+  }).catch(() => {});
+  return box;
 }
 
 function stat(v, k) { return el('div.stat', el('span.v', String(v)), el('span.k', k)); }

@@ -6,6 +6,7 @@ import * as plan from './plan.js';
 import { ring, modal, confirmBox } from './ui.js';
 import { startStudy } from './study.js';
 import { go } from './main.js';
+import { okumaStatus } from './okuma.js';
 
 export function renderMasa(root) {
   const today = dayNum();
@@ -51,7 +52,7 @@ export function renderMasa(root) {
 
     el('div.list',
       el('button', { on: { click: () => go('calis') } }, el('span', t('m.lKelime')), el('span.r', t('m.lDue', { n: due }))),
-      el('button', { on: { click: () => go('okuma') } }, el('span', t('m.lOkuma')), el('span.r', 'v0.2')),
+      el('button', { on: { click: () => go('okuma') } }, el('span', t('m.lOkuma')), okStatus()),
       el('button', { on: { click: () => go('arsiv') } }, el('span', t('m.lHata')), el('span.r', t('m.lHataN', { n: recentErrCount(today) })))),
 
     ydsPanel(),
@@ -60,6 +61,12 @@ export function renderMasa(root) {
     weeklyButton(today),
   );
   root.append(wrap);
+}
+
+function okStatus() {
+  const r = el('span.r', '…');
+  okumaStatus().then(x => { r.textContent = x; }).catch(() => { r.textContent = ''; });
+  return r;
 }
 
 function installHint() {

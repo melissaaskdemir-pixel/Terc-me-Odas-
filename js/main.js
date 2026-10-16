@@ -10,11 +10,11 @@ import { toast } from './ui.js';
 import { isStudying } from './study.js';
 import { renderMasa, maybeBriefing } from './masa.js';
 import { renderCalis } from './calis.js';
-import { renderOkuma } from './okuma.js';
+import { renderOkuma, isReading } from './okuma.js';
 import { renderSozluk } from './sozluk.js';
 import { renderArsiv, backupWarn } from './arsiv.js';
 
-export const APP_VERSION = '0.1.3';
+export const APP_VERSION = '0.2.0';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],
@@ -24,7 +24,7 @@ let current = 'masa';
 const scrollPos = {};
 
 export function go(name, keepScroll) {
-  if (waitingSW && !isStudying()) { waitingSW.postMessage('skipWaiting'); }
+  if (waitingSW && !isStudying() && !isReading()) { waitingSW.postMessage('skipWaiting'); }
   const screen = document.getElementById('screen');
   if (!isStudying()) scrollPos[current] = screen.scrollTop;
   current = name;

@@ -109,6 +109,24 @@ export async function removePack(pid) {
   }
 }
 
+// Okumadan eklenen kelimeler: yerel paket ('yerel'), yedekle birlikte saklanır
+export const LOCAL_DECK = 'p:yerel:okuma';
+export async function addLocalCard(card) {
+  let rec = await db.get('packs', 'yerel');
+  if (!rec) rec = { id: 'yerel', ad: 'Okumadan eklenenler', v: 1, at: Date.now(), decks: [{ id: LOCAL_DECK, ad: 'Okumadan eklenenler', cards: [] }], n: 0, ses: 0, yerel: true };
+  const d = rec.decks[0];
+  if (d.cards.some(c => c.id === card.id)) return false;
+  d.cards.push({ ...card, o: d.cards.length });
+  rec.n = d.cards.length;
+  rec.at = Date.now();
+  await db.put('packs', rec);
+  const deck = DECKS.get(LOCAL_DECK);
+  const c = { ...card, o: d.cards.length - 1 };
+  if (deck) { c.deck = LOCAL_DECK; deck.cards.push(c); CARDS.set(c.id, c); }
+  else addDeck({ id: LOCAL_DECK, ad: d.ad, cards: [c] }, 'yerel');
+  return true;
+}
+
 export async function packAudio(key) {
   return (await db.get('pses', key)) || null;
 }

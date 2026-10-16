@@ -1,5 +1,5 @@
 // Tercüme Odası servis çalışanı: uygulama kabuğu ve içerik internetsiz çalışsın diye önbellekte tutulur.
-const VERSION = '1656d45ca3';
+const VERSION = '0425336a2f';
 const SHELL = 'kabuk-' + VERSION;
 const AUDIO = 'ses-v1';
 const FILES = [
@@ -46,7 +46,10 @@ const FILES = [
  "./icons/icon-512.png",
  "./icons/icon-maskable-512.png",
  "./data/kendi.json",
- "./data/morph.json"
+ "./data/morph.json",
+ "./data/okuma.json",
+ "./data/sozluk/ix.json",
+ "./data/sozluk/x.json"
 ];
 
 self.addEventListener('install', e => {

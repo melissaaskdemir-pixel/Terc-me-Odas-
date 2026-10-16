@@ -13,7 +13,23 @@ player.addEventListener('ended', () => fireEnd());
 player.addEventListener('error', () => fireEnd());
 function fireEnd() { const f = endCb; endCb = null; if (f) f(); }
 
-export const clipUrl = key => `audio/${S.settings.voice || 'a'}/${key}.mp4`;
+// 'x:' önekli anahtarlar Xenia (okuma cümleleri), 'a:' önekliler Aidar (okuma kelimeleri)
+export const clipUrl = key => (key[1] === ':' && (key[0] === 'x' || key[0] === 'a'))
+  ? `audio/${key[0]}/${key.slice(2)}.mp4` : `audio/${S.settings.voice || 'a'}/${key}.mp4`;
+
+// Arka planda önbelleğe al (internetsiz okuma için); çalmaz
+export async function cacheKeys(keys) {
+  try {
+    const c = await caches.open(AUDIO_CACHE);
+    for (const k of keys) {
+      if (!k || k.startsWith('p:')) continue;
+      const u = clipUrl(k);
+      if (await c.match(u)) continue;
+      const r = await fetch(u);
+      if (r.ok) await c.put(u, r);
+    }
+  } catch (e) {}
+}
 
 async function blobFor(key) {
   if (key.startsWith('p:')) return packAudio(key);
@@ -178,18 +194,19 @@ export function deckAudioKeys(deckId) {
   return [...keys].filter(k => !k.startsWith('p:'));
 }
 
-export async function cachedCount(deckId) {
-  const keys = deckAudioKeys(deckId);
+export async function cachedCount(deckId) { return cachedKeys(deckAudioKeys(deckId)); }
+
+export async function cachedKeys(keys) {
   try {
     const c = await caches.open(AUDIO_CACHE);
-    const have = new Set((await c.keys()).map(r => new URL(r.url).pathname.split('/').slice(-2).join('/')));
-    const v = S.settings.voice || 'a';
-    return { total: keys.length, have: keys.filter(k => have.has(`${v}/${k}.mp4`)).length };
+    const have = new Set((await c.keys()).map(r => new URL(r.url).pathname));
+    return { total: keys.length, have: keys.filter(k => have.has(new URL(clipUrl(k), location.href).pathname)).length };
   } catch (e) { return { total: keys.length, have: 0 }; }
 }
 
-export async function downloadDeck(deckId, onProgress, signal) {
-  const keys = deckAudioKeys(deckId);
+export function downloadDeck(deckId, onProgress, signal) { return downloadKeys(deckAudioKeys(deckId), onProgress, signal); }
+
+export async function downloadKeys(keys, onProgress, signal) {
   const c = await caches.open(AUDIO_CACHE);
   let done = 0, failed = 0;
   const queue = [];

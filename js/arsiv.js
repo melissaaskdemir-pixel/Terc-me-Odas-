@@ -5,6 +5,8 @@ import { S, set, setSetting, saveSettings, saveProf, exportAll, importAll } from
 import { CARDS, DECKS, CONTENT_VERSION, importPack, removePack, readPackFile } from './decks.js';
 import * as plan from './plan.js';
 import * as audio from './audio.js';
+import { okumaAudioKeys } from './okuma.js';
+import { dictStatus, downloadDict } from './sozluk.js';
 import * as db from './db.js';
 import { toast, confirmBox, switchEl, stepper, seg } from './ui.js';
 import { startStudy } from './study.js';
@@ -201,25 +203,34 @@ async function renderAyar(body) {
   );
   // ses paketleri
   body.append(el('div.kicker', t('a.gAudio')), el('div.note', t('a.audioNote')));
-  for (const d of DECKS.values()) {
-    if (d.pack) continue;
+  const dlRow = (label, sub, statusFn, dlFn) => {
     const status = el('span.mono.muted', '…');
     const btn = el('button.btn.btn-sm', t('a.dl'));
     const upd = async () => {
-      const c = await audio.cachedCount(d.id);
-      status.textContent = `${c.have}/${c.total}`;
-      btn.textContent = c.have >= c.total ? t('a.dlDone') : t('a.dl');
-      btn.disabled = c.have >= c.total;
+      try {
+        const c = await statusFn();
+        status.textContent = `${c.have}/${c.total}`;
+        btn.textContent = c.have >= c.total ? t('a.dlDone') : t('a.dl');
+        btn.disabled = c.have >= c.total;
+      } catch (e) { status.textContent = ''; }
     };
     btn.addEventListener('click', async () => {
       btn.disabled = true;
-      const r = await audio.downloadDeck(d.id, (n, tot) => { status.textContent = `${n}/${tot}`; });
-      toast(r.failed ? t('a.dlFail', { n: r.failed }) : t('a.dlOk'));
+      try {
+        const r = await dlFn((n, tot) => { status.textContent = `${n}/${tot}`; });
+        toast(r.failed ? t('a.dlFail', { n: r.failed }) : t('a.dlOk'));
+      } catch (e) { toast(t('u.offline')); }
       upd();
     });
     upd();
-    body.append(row(d.ad, null, el('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } }, status, btn)));
+    body.append(row(label, sub, el('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } }, status, btn)));
+  };
+  for (const d of DECKS.values()) {
+    if (d.pack) continue;
+    dlRow(d.ad, null, () => audio.cachedCount(d.id), p => audio.downloadDeck(d.id, p));
   }
+  dlRow(t('a.dlOkuma'), t('a.dlOkumaSub'), async () => audio.cachedKeys(await okumaAudioKeys()), async p => audio.downloadKeys(await okumaAudioKeys(), p));
+  dlRow(t('a.dlDict'), t('a.dlDictSub'), dictStatus, downloadDict);
   // yedek
   const a = backupAgeDays();
   body.append(
