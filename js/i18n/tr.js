@@ -5,7 +5,7 @@ export default {
 
   // kart tipleri
   'type.kelime': 'Kelime', 'type.kalip': 'Kalıp', 'type.baglac': 'Bağlaç', 'type.terim': 'Terim', 'type.cift': 'Fiil çifti',
-  'type.yonetim': 'Yönetim', 'type.koll': 'Kollokasyon', 'type.esanlam': 'Eş anlamlı', 'type.register': 'Sade → resmî',
+  'type.yonetim': 'Yönetim', 'type.koll': 'Kollokasyon', 'type.esanlam': 'Eş anlamlı', 'type.register': 'Sade → resmî', 'type.onek': 'Önek',
 
   // çalışma ekranı
   'st.answer': 'Cevap', 'st.close': 'Oturumu kapat', 'st.combo': 'KOMBO ×{n}', 'st.yourAnswer': 'Cevabın', 'st.again': 'Geri geldi',
@@ -46,7 +46,7 @@ export default {
 
   // masa
   'm.freezes': '{n} seri dondurma', 'm.freezeN': '· {n} dondurma',
-  'kind.gunun': 'GÜNÜN SETİ', 'kind.mini': 'MİNİ SET', 'kind.tur': 'TUR', 'kind.hata': 'HATA DEFTERİ', 'kind.liste': 'SÖZLÜKTEN', 'm.streakTitle': 'Seri: en az 5 kart çalışılan art arda günler',
+  'kind.gunun': 'GÜNÜN SETİ', 'kind.mini': 'MİNİ SET', 'kind.tur': 'TUR', 'kind.hata': 'HATA DEFTERİ', 'kind.liste': 'SÖZLÜKTEN', 'kind.onek': 'ÖNEKLER', 'm.streakTitle': 'Seri: en az 5 kart çalışılan art arda günler',
   'm.streak': 'Seri {n} gün', 'm.ringLabel': 'Günlük halka {n} / {g}', 'm.known': 'Bilinen kelime',
   'm.knownDelta': '+{n} bu hafta', 'm.learning': '{n} kart öğreniliyor', 'm.openSet': 'Günün setini aç', 'm.continueSet': 'Günün setine devam',
   'm.extraSet': 'Ekstra tur', 'm.cardsLeft': '{n} kart', 'm.plus20': '+20 kart', 'm.plan': 'Bugün: {due} tekrar, {nw} yeni kart hakkı',
@@ -96,12 +96,18 @@ export default {
   // çalış
   'c.kicker': 'ÇALIŞMA DOSYALARI', 'c.title': 'Çalış', 'c.kelime': 'Kelime', 'c.open': 'AÇIK',
   'c.decks': 'Desteler', 'c.types': 'Kart tipi', 'c.tAll': 'Karışık', 'c.tKelime': 'Kelime', 'c.tCift': 'Fiil çifti', 'c.tYonetim': 'Yönetim',
-  'c.tKoll': 'Kollokasyon', 'c.tEsanlam': 'Eş anlamlı', 'c.counts': '{due} tekrar bekliyor · {nw} yeni kart · bugün kalan yeni hakkı {allow}',
+  'c.tKoll': 'Kollokasyon', 'c.tEsanlam': 'Eş anlamlı', 'c.tOnek': 'Önek', 'c.counts': '{due} tekrar bekliyor · {nw} yeni kart · bugün kalan yeni hakkı {allow}',
   'c.start': '{n} kartlık tur başlat', 'c.noNew': 'Bugünkü yeni kart hakkın doldu. İstersen bugüne özel artır.', 'c.extra10': '+10 yeni kart',
   'c.extraAdded': 'Bugün için 10 yeni kart eklendi.', 'c.errs': 'Son hatalarını çalış ({n} kart)', 'c.soon': 'Sıradaki bölümler',
-  'c.onek': 'Önekler', 'c.gramer': 'Gramer haritası', 'c.yazma': 'Yazma: çeviri, register, form', 'c.ses': 'Ses: dikte, gölgeleme', 'c.yds': 'YDS',
+  'c.onek': 'Önekler', 'c.onekSub': '{n} kart', 'c.gramer': 'Gramer haritası', 'c.yazma': 'Yazma: çeviri, register, form', 'c.ses': 'Ses: dikte, gölgeleme', 'c.yds': 'YDS',
   'c.soonNote': 'Her bölüm açıldığında tek başına ya da karışık çalışılabilecek.',
 
+    'on.kicker': 'FİİL ÖNEKLERİ', 'on.title': 'Önekler', 'on.intro': 'Her öneğin temel anlamı, ondan çıkan soyut anlamlar ve sınavda karışanlar. Kartlarda Türkçe anlamı ve kök ailesini görürsün, önekli fiili cümleye uygun biçimde yazarsın.',
+  'on.prog': '{k} öğrenildi · {l} çalışılıyor · {w} yeni · {d} tekrar bekliyor', 'on.tur': 'Önek kartlarıyla 20 kartlık tur',
+  'on.vOnek': 'Önekler', 'on.vAile': 'Kök aileleri', 'on.vKural': 'Kurallar', 'on.prefix': 'ÖNEK', 'on.nCards': '{n} kart', 'on.trap': 'Dikkat',
+  'on.studyP': '{p} kartlarını çalış ({n})', 'on.noCards': 'Bu önek için kart yok; anlatım yeterli.', 'on.tapHint': 'Bir fiile dokununca sözlükte açılır.',
+  'on.famN': '{k}/{n}', 'on.famNote': 'Aynı köke farklı önekler: anlamın nasıl değiştiğini yan yana gör. Satıra dokununca fiil sözlükte açılır.',
+  'on.thP': 'ÖNEK', 'on.thV': 'FİİL', 'on.thTr': 'ANLAM', 'on.studyF': 'Bu aileyi çalış ({n} kart)', 'on.lgNew': 'yeni', 'on.lgLearn': 'çalışılıyor', 'on.lgKnown': 'öğrenildi',
   'c.ydsOpen': 'YDS denemeleri', 'c.ydsSub': '80 soru',
 
   // yds

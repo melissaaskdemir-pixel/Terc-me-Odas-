@@ -12,7 +12,7 @@ import { okumaToday, okumaLabel } from './okuma.js';
 
 const TYPE_LABEL = {
   kelime: 'type.kelime', kalip: 'type.kalip', baglac: 'type.baglac', terim: 'type.terim', cift: 'type.cift',
-  yonetim: 'type.yonetim', koll: 'type.koll', esanlam: 'type.esanlam', register: 'type.register',
+  yonetim: 'type.yonetim', koll: 'type.koll', esanlam: 'type.esanlam', register: 'type.register', onek: 'type.onek',
 };
 
 let cur = null; // etkin oturum
@@ -71,9 +71,11 @@ function updateTop() {
     f.bar.style.width = Math.min(100, 100 * n / goal) + '%';
     f.count.textContent = `${n}/${goal}`;
   } else {
-    const done = Math.min(sess.stats.n, Math.max(sess.base, 1));
+    const first = sess.stats.first || 0;
+    const done = Math.min(first, Math.max(sess.base, 1));
     f.bar.style.width = Math.min(100, 100 * done / Math.max(sess.base, 1)) + '%';
-    f.count.textContent = `${sess.stats.n}/${sess.base}`;
+    const again = sess.pending.length + (cur.item && cur.item.again && cur.state === 'ask' ? 1 : 0);
+    f.count.textContent = `${Math.min(first, sess.base)}/${sess.base}` + (first >= sess.base && again ? ` +${again}` : '');
   }
   f.combo.textContent = sess.combo >= 2 ? t('st.combo', { n: sess.combo }) : '';
   f.pts.textContent = sess.stats.pts ? `+${sess.stats.pts}` : '';
@@ -162,6 +164,7 @@ function promptNodes() {
       out.push(el('div', el('span.v.ru', c.v), el('span.qs', '  ' + c.q)), clozeNode(ex.cloze, cur.fill, cur.fillCls), asking ? el('div.hint', h) : null);
       break;
     case 'koll':
+    case 'onek':
     case 'esanlam':
       out.push(el('div.q' + (long ? '.long' : ''), c.q), clozeNode(ex.cloze, cur.fill, cur.fillCls), asking ? el('div.hint', h) : null);
       break;

@@ -10,7 +10,7 @@ import { openYds } from './yds.js';
 import { toast } from './ui.js';
 
 const TYPES = [
-  ['all', 'c.tAll'], ['kelime', 'c.tKelime'], ['cift', 'c.tCift'], ['yonetim', 'c.tYonetim'], ['koll', 'c.tKoll'], ['esanlam', 'c.tEsanlam'],
+  ['all', 'c.tAll'], ['kelime', 'c.tKelime'], ['cift', 'c.tCift'], ['yonetim', 'c.tYonetim'], ['koll', 'c.tKoll'], ['esanlam', 'c.tEsanlam'], ['onek', 'c.tOnek'],
 ];
 const ui = { decks: null, type: 'all' };
 
@@ -75,9 +75,10 @@ export function renderCalis(root) {
     errIds.length ? el('button.btn.btn-wide', { on: { click: () => startStudy('hata', { ids: errIds }, () => go('calis')) } },
       t('c.errs', { n: errIds.length })) : null,
     el('button.btn.btn-big', { on: { click: () => openYds() } }, el('span', t('c.ydsOpen')), el('span.mono.acc', t('c.ydsSub'))),
+    el('button.btn.btn-big', { on: { click: () => go('onek') } }, el('span', t('c.onek')), el('span.mono.acc', t('c.onekSub', { n: DECKS.get('onek')?.cards.length || 0 }))),
     el('div.kicker', t('c.soon')),
     el('div.list',
-      ...[['c.onek', 'v0.4'], ['c.gramer', 'v0.4'], ['c.yazma', 'v0.4'], ['c.ses', 'v0.4']].map(([k, v]) =>
+      ...[['c.gramer', 'v0.4'], ['c.yazma', 'v0.4'], ['c.ses', 'v0.4']].map(([k, v]) =>
         el('div.lock', el('span', t(k)), el('span.r', v)))),
     el('div.note', t('c.soonNote')),
   );

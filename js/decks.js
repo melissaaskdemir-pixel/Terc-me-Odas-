@@ -6,6 +6,7 @@ export const DECKS = new Map();   // id → { id, ad, cards, pack? }
 export const CARDS = new Map();   // kart kimliği → kart
 export let SERIES = {};
 export let CONTENT_VERSION = '';
+export let ONEK = null;   // önek anlatımı + aileler (data/onek.json)
 
 async function fetchJSON(url) {
   const r = await fetch(url);
@@ -24,6 +25,7 @@ export async function loadDecks() {
   CONTENT_VERSION = k.v;
   SERIES = k.series || {};
   addDeck(k);
+  try { ONEK = await fetchJSON('data/onek.json'); addDeck(ONEK.deck); } catch (e) { ONEK = null; }
   for (const p of await db.all('packs')) for (const d of p.decks || []) addDeck(d, p.id);
 }
 
@@ -36,7 +38,7 @@ export function loadMorph() {
 // ---------------------------------------------------------------- kart yardımcıları
 export const TYPE_GROUP = {
   kelime: 'kelime', kalip: 'kelime', baglac: 'kelime', terim: 'kelime',
-  cift: 'cift', yonetim: 'yonetim', koll: 'koll', register: 'koll', esanlam: 'esanlam',
+  cift: 'cift', yonetim: 'yonetim', koll: 'koll', register: 'koll', esanlam: 'esanlam', onek: 'onek',
 };
 
 // Kartın bu gösterimdeki beklenen cevabı

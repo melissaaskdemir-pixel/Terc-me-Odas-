@@ -125,15 +125,15 @@ export function createSession(kind, opts = {}) {
     stats: { n: 0, ok: 0, imla: 0, sonek: 0, yapi: 0, bil: 0, known: 0, pts: 0, nw: 0 },
     startedAt: Date.now(), base: 0, done: false, lastPick: {},
   };
-  const due = kind === 'hata' || kind === 'liste' ? [] : dueList(opts, today);
+  const due = LISTED.has(kind) ? [] : dueList(opts, today);
   sess.due = due;
-  sess.list = kind === 'hata' || kind === 'liste' ? [...(opts.ids || [])] : [];
+  sess.list = LISTED.has(kind) ? [...(opts.ids || [])] : [];
   const newLeft = newAllowance(today);
   sess.newShare = due.length + newLeft ? newLeft / (due.length + newLeft) : 0;
   if (kind === 'gunun' && goalLeft(today) === 0) sess.extra = 20;
   if (kind === 'mini') sess.base = MINI;
   else if (kind === 'tur') sess.base = opts.size || 20;
-  else if (kind === 'hata' || kind === 'liste') sess.base = sess.list.length;
+  else if (LISTED.has(kind)) sess.base = sess.list.length;
   return sess;
 }
 
@@ -141,7 +141,9 @@ export function goalLeft(today = dayNum()) { return Math.max(0, set('halka') - d
 
 function wantMore(sess) {
   if (sess.kind === 'gunun') return goalLeft(sess.today) > 0 || sess.extra > 0;
-  return sess.picks < sess.base;
+  // liste oturumları listenin sonuna kadar; tur ve mini: hedef sayıda farklı kart (tekrar gelenler sayılmaz)
+  if (LISTED.has(sess.kind)) return sess.list.some(id => CARDS.has(id));
+  return (sess.basePicks || 0) < sess.base;
 }
 
 // Sıradaki kartı döndürür: { id, variant, isNew, again }
@@ -163,6 +165,7 @@ export function nextItem(sess) {
   sess.served.add(id);
   sess.lastPick[id] = sess.picks;
   sess.picks++;
+  sess.basePicks = (sess.basePicks || 0) + 1;
   if (sess.kind === 'gunun' && sess.extra > 0) sess.extra--;
   const st = cardState(id);
   const c = CARDS.get(id);
@@ -174,7 +177,7 @@ function exhausted(sess) { return sess._exhausted; }
 
 function pickBase(sess) {
   const { opts } = sess;
-  if (sess.kind === 'hata' || sess.kind === 'liste') {
+  if (LISTED.has(sess.kind)) {
     while (sess.list.length) { const id = sess.list.shift(); if (CARDS.has(id)) return id; }
     return null;
   }
@@ -192,7 +195,8 @@ function pickBase(sess) {
 }
 
 // ---------------------------------------------------------------- cevap işleme
-const STRICT_FORM = new Set(['yonetim', 'koll', 'esanlam']);
+const LISTED = new Set(['hata', 'liste', 'onek']);   // sabit kart listesiyle oturumlar
+const STRICT_FORM = new Set(['yonetim', 'koll', 'esanlam', 'onek']);
 
 export function ratingFor(card, o) {
   if (o.res === 'known') return 4;
@@ -262,6 +266,7 @@ export async function recordAnswer(sess, item, o) {
 
   // oturum istatistikleri
   sess.stats.n++;
+  if (!item.again) sess.stats.first = (sess.stats.first || 0) + 1;
   sess.stats.pts += pts;
   if (sess.stats[o.res] != null) sess.stats[o.res]++;
 
