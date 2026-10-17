@@ -23,7 +23,7 @@ Bakanlık terimleri gibi açık lisanslı olmayan içerik bu sitede yayımlanmaz
 - Kapsam: kelime dağarcığı tahmini ve testi
 - YDS: üretilmiş denemeler, serbest soru çözme ve açıklamalı alıştırma bankası, kalem ve silgi
 - Önekler: 20 öneğin anlamları, kök aileleri, kurallar ve önek kartları
-- Ses: dikte (kelime kelime puan, imla defteri) ve gölgeleme (kayıt ve karşılaştırma)
+- Ses: dikte (kelime kelime puan, imla defteri); insan sesi kaynağı Tatoeba gönüllülerinin kayıtları
 - Yazma: biçim, sade → resmî ve çeviri kartları
 - Gramer haritası: A1–C2 konu iskeleti, madde madde işaretleme
 
@@ -40,4 +40,5 @@ Bakanlık terimleri gibi açık lisanslı olmayan içerik bu sitede yayımlanmaz
 - Çekimler: OpenCorpora sözlüğü (pymorphy3 ile), CC BY-SA
 - Vurgu: OpenRussian sözlüğü, CC BY-SA
 - Ses: Silero TTS v5.4, ticari olmayan kullanım (CC BY-NC-SA 4.0)
+- Dikte insan sesi: Tatoeba (https://tatoeba.org) gönüllülerinin kayıtları; cümleler CC BY 2.0 FR, sesler okuyanın lisansıyla (CC BY 4.0, CC BY-NC 4.0, CC0 1.0). Okuyanlar: fjay69, Inego, EugeneGS, retr0ra1n, Shady_arc, Alex_M, namikiri, lovermann. Her klibin okuyanı, lisansı ve cümle numarası data/insan.json içinde ve uygulamada cümlenin altında. Sesler kırpıldı, ses düzeyi eşitlendi ve AAC'ye dönüştürüldü.
 - Yazı tipleri: ParaType PT Serif, PT Sans, PT Mono, SIL Open Font License 1.1 (fonts/OFL.txt)

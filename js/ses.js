@@ -1,4 +1,5 @@
-// Ses: dikte (duyduğunu yaz, imla puanlı) ve gölgeleme (dinle, kaydet, karşılaştır)
+// Ses odası: dikte. Duyduğunu yaz, her kelime ayrı puanlanır, yanlışlar imla defterine düşer.
+// Kaynaklar: insan sesi (Tatoeba gönüllüleri, gündelik dil) ve kart ya da okuma cümleleri (resmî dil, sentez ses).
 import { el, svg, ICON, dayNum } from './util.js';
 import { t } from './i18n.js';
 import * as db from './db.js';
@@ -13,40 +14,55 @@ import { lookup } from './sozluk.js';
 
 const N = 10;
 const LEN = { kisa: [3, 6], orta: [7, 11], uzun: [12, 40] };
-let R = null, loadP = null, OK_DATA = null;
+const SRC = ['insan', 'kart', 'okuma', 'hepsi'];
+let R = null, loadP = null, OK_DATA = null, INSAN = null, INSAN_DATA = null;
 const ui = { view: 'home', run: null };
 const put = (w, ...xs) => w.append(...xs.filter(x => x != null && x !== false));
 
+export function loadInsan() {
+  if (!INSAN) INSAN = fetch('data/insan.json').then(r => r.json()).catch(e => { INSAN = null; throw e; });
+  return INSAN;
+}
+export async function insanAudioKeys() { return (await loadInsan()).items.map(x => 't:' + x.id); }
+
 function load() {
-  if (!loadP) loadP = Promise.all([db.get('kv', 'ses'), loadOkuma().catch(() => null)]).then(([r, ok]) => {
+  if (!loadP) loadP = Promise.all([db.get('kv', 'ses'), loadOkuma().catch(() => null), loadInsan().catch(() => null)]).then(([r, ok, ins]) => {
     R = r || {};
     R.days = R.days || {}; R.seen = R.seen || {}; R.imla = R.imla || [];
-    R.len = R.len || 'orta'; R.src = R.src || 'hepsi';
+    R.len = R.len || 'orta';
+    // 0.4.6: gölgeleme kalktı, insan sesi geldi; kaynak bir kez insan sesine alınır
+    if (!R.v || R.v < 2) { R.src = 'insan'; R.v = 2; }
+    if (!SRC.includes(R.src)) R.src = 'insan';
     OK_DATA = ok;
-  });
+    INSAN_DATA = ins;
+  }).catch(e => { loadP = null; throw e; });
   return loadP;
 }
 const save = () => db.put('kv', R, 'ses');
-export function isSesOpen() { return ui.view === 'dikte' || ui.view === 'golge'; }
+export function isSesOpen() { return ui.view === 'dikte'; }
 
 // ---------------------------------------------------------------- cümle havuzu
 const words = s => s.trim().split(/\s+/).filter(w => /[а-яё]/i.test(w)).length;
 function pool(len, src) {
   const out = [], seenKeys = new Set();
-  const add = (ru, tr, k, from) => {
+  const add = (ru, tr, k, from, by) => {
     if (!ru || !k || seenKeys.has(k)) return;
     const n = words(ru);
     if (n < 3) return;
     seenKeys.add(k);
-    out.push({ ru, tr: tr || '', k, from, n });
+    out.push({ ru, tr: tr || '', k, from, n, by });
   };
-  if (src !== 'okuma') {
+  const has = s => src === s || src === 'hepsi';
+  if (has('insan') && INSAN_DATA) {
+    for (const x of INSAN_DATA.items) add(x.ru, x.tr, 't:' + x.id, 'insan', { id: x.id, sp: x.sp, lic: x.lic });
+  }
+  if (has('kart')) {
     for (const c of CARDS.values()) {
       for (const e of c.ex || []) add(e[0], e[1], e[2], c.t === 'onek' ? 'onek' : 'kart');
       for (const z of c.cz || []) add(z.full, z.tr, z.au, c.t === 'onek' ? 'onek' : 'kart');
     }
   }
-  if (src !== 'kart' && OK_DATA) {
+  if (has('okuma') && OK_DATA) {
     for (const f of OK_DATA.files) for (const p of f.paras) {
       for (const s of p.ad) add(s.ru, s.tr, s.au, 'okuma');
       for (const s of p.o) add(s.ru, s.tr, s.au, 'okuma');
@@ -65,7 +81,7 @@ function pick(len, src, n) {
 
 function dayRec() {
   const d = dayNum();
-  return R.days[d] || (R.days[d] = { dk: 0, words: 0, ok: 0, imla: 0, sonek: 0, yapi: 0, gl: 0 });
+  return R.days[d] || (R.days[d] = { dk: 0, words: 0, ok: 0, imla: 0, sonek: 0, yapi: 0 });
 }
 
 // ---------------------------------------------------------------- ekranlar
@@ -74,7 +90,7 @@ export function renderSes(root) {
   root.append(wrap);
   load().then(() => {
     if (!wrap.isConnected) return;
-    if ((ui.view === 'dikte' || ui.view === 'golge') && ui.run) return renderRun(root);
+    if (ui.view === 'dikte' && ui.run) return renderRun(root);
     if (ui.view === 'sonuc' && ui.run) return renderResult(wrap);
     if (ui.view === 'imla') return renderImla(wrap);
     renderHome(wrap);
@@ -96,51 +112,52 @@ function seg(options, value, onChange) {
 function renderHome(wrap) {
   document.body.classList.remove('studying');
   const today = dayNum();
-  let w7 = 0, ok7 = 0, im7 = 0, gl7 = 0;
-  for (let d = today - 6; d <= today; d++) { const r = R.days[d]; if (r) { w7 += r.words; ok7 += r.ok; im7 += r.imla; gl7 += r.gl; } }
+  let w7 = 0, ok7 = 0, im7 = 0;
+  for (let d = today - 6; d <= today; d++) { const r = R.days[d]; if (r) { w7 += r.words; ok7 += r.ok; im7 += r.imla; } }
   const count = el('span');
-  const upd = () => { count.textContent = t('sx.poolN', { n: pool(R.len, R.src).length }); };
+  const srcNote = el('div.note');
+  const upd = () => {
+    count.textContent = t('sx.poolN', { n: pool(R.len, R.src).length });
+    srcNote.textContent = t('sx.srcNote.' + R.src);
+  };
   upd();
   put(wrap,
     el('div.topline', el('button.linkbtn', { on: { click: () => go('calis') } }, '‹ ' + t('tab.calis')), null),
     el('div.kicker', t('sx.kicker')),
     el('h1.h1', t('sx.title')),
     el('div.panel', { style: { display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' } },
-      el('div', el('div.kicker', t('sx.week')), el('div.note', w7 ? t('sx.weekNote', { w: w7, im: im7, g: gl7 }) : t('sx.weekNone'))),
+      el('div', el('div.kicker', t('sx.week')), el('div.note', w7 ? t('sx.weekNote', { w: w7, im: im7 }) : t('sx.weekNone'))),
       el('div.mono', { style: { fontSize: '28px' } }, w7 ? Math.round(100 * ok7 / w7) + '%' : '—')),
+    el('div.kicker', t('sx.src')),
+    seg(SRC.map(s => [s, t('sx.' + s)]), R.src, v => { R.src = v; save(); upd(); }),
+    srcNote,
     el('div.kicker', t('sx.len')),
     seg([['kisa', t('sx.kisa')], ['orta', t('sx.orta')], ['uzun', t('sx.uzun')]], R.len, v => { R.len = v; save(); upd(); }),
-    el('div.kicker', t('sx.src')),
-    seg([['hepsi', t('sx.hepsi')], ['kart', t('sx.kart')], ['okuma', t('sx.okuma')]], R.src, v => { R.src = v; save(); upd(); }),
     el('div.note', count),
     el('section.panel.sect',
       el('div.topline', el('h2.h2', t('sx.dikte')), el('span.kicker', t('sx.nSent', { n: N }))),
       el('div.note', t('sx.dikteNote')),
-      el('button.btn.btn-primary.btn-wide', { on: { click: () => start('dikte') } }, t('sx.dikteStart'))),
-    el('section.panel.sect',
-      el('div.topline', el('h2.h2', t('sx.golge')), el('span.kicker', t('sx.nSent', { n: N }))),
-      el('div.note', t('sx.golgeNote')),
-      el('button.btn.btn-primary.btn-wide', { on: { click: () => start('golge') } }, t('sx.golgeStart'))),
+      el('button.btn.btn-primary.btn-wide', { on: { click: start } }, t('sx.dikteStart'))),
     R.imla.length ? el('button.btn.btn-wide', { on: { click: () => nav('imla') } }, t('sx.imlaOpen', { n: R.imla.length })) : null,
+    el('div.note.sx-credit', t('sx.credit'), ' ', el('a', { href: 'https://tatoeba.org', target: '_blank', rel: 'noopener' }, 'tatoeba.org')),
   );
 }
 
-function start(kind) {
+function start() {
   const items = pick(R.len, R.src, N);
   if (!items.length) { toast(t('sx.empty')); return; }
   audio.unlock();
   loadMorph().catch(() => {});
-  ui.run = { kind, items, i: 0, res: [], typed: '', done: false, rec: null };
+  ui.run = { items, i: 0, res: [], typed: '', done: false };
   // ilk cümleyi bu dokunuşta hazırla ve çal (iOS otomatik oynatma kuralı)
   audio.prepare(items[0].k).then(() => { if (ui.run && ui.run.i === 0) audio.playNow(items[0].k); });
   if (items[1]) audio.prepare(items[1].k);
-  ui.view = kind;
+  ui.view = 'dikte';
   go('ses');
 }
 
 function quit() {
   audio.stop();
-  stopRec();
   document.body.classList.remove('studying');
   if (ui.run && ui.run.res.length) { ui.view = 'sonuc'; go('ses'); return; }
   ui.run = null;
@@ -150,9 +167,8 @@ function quit() {
 function nextItem() {
   const r = ui.run;
   audio.stop();
-  stopRec();
   r.i++;
-  r.done = false; r.typed = ''; r.rec = null; r.last = null;
+  r.done = false; r.typed = ''; r.last = null;
   if (r.i >= r.items.length) { document.body.classList.remove('studying'); ui.view = 'sonuc'; go('ses'); return; }
   const it = r.items[r.i];
   if (audio.isPrepared(it.k)) audio.playNow(it.k); else audio.play(it.k);
@@ -173,15 +189,23 @@ function renderRun(root) {
     el('div.bar', el('i', { style: { width: (100 * r.i / r.items.length) + '%' } })),
     el('span.st-count', `${r.i + 1}/${r.items.length}`));
   const body = el('div.sx-body');
-  const frame = el('div.study.sx', top, el('div.st-sub', el('span', t(r.kind === 'dikte' ? 'sx.dikteK' : 'sx.golgeK')), el('span', t('sx.from.' + it.from))), body);
+  const frame = el('div.study.sx', top, el('div.st-sub', el('span', t('sx.dikteK')), el('span', t('sx.from.' + it.from))), body);
   root.append(frame);
-  if (r.kind === 'dikte') renderDikte(body, r, it); else renderGolge(body, r, it);
+  renderDikte(body, r, it);
+}
+
+// Tatoeba atfı: okuyan, lisans, cümlenin sayfası
+function credit(it, full) {
+  if (!it.by) return null;
+  if (!full) return el('span', t('sx.reader', { sp: it.by.sp }));
+  return el('div.sx-cred', t('sx.credLine', { sp: it.by.sp, lic: it.by.lic }), ' · ',
+    el('a', { href: `https://tatoeba.org/tr/sentences/show/${it.by.id}`, target: '_blank', rel: 'noopener' }, `Tatoeba #${it.by.id}`));
 }
 
 // ---------------------------------------------------------------- dikte
 function renderDikte(body, r, it) {
   const card = el('article.paper.sx-card',
-    el('div.ck', el('span', t('sx.words', { n: it.n })), el('span', '')),
+    el('div.ck', el('span', t('sx.words', { n: it.n })), credit(it, false) || el('span', t('sx.synth'))),
     el('div.sx-plays', playBtn(it.k, 1, t('sx.listen')), playBtn(it.k, 0.7, '0.7×')));
   const ta = el('textarea.sx-in', { lang: 'ru', rows: 3, autocomplete: 'off', autocapitalize: 'off', autocorrect: 'off', spellcheck: 'false', placeholder: t('sx.typeHere') });
   ta.value = r.typed || '';
@@ -203,7 +227,8 @@ function renderDikte(body, r, it) {
     el('div.lab', t('st.correct')),
     el('div.ans.ru.small', it.ru),
     it.tr ? el('div.meta', it.tr) : null,
-    res.counts.imla + res.counts.sonek + res.counts.yapi ? el('div.meta', t('sx.errs', res.counts)) : null));
+    res.counts.imla + res.counts.sonek + res.counts.yapi ? el('div.meta', t('sx.errs', res.counts)) : null,
+    credit(it, true)));
   put(body, card, el('div.sx-nav',
     el('span'),
     el('button.btn.btn-primary', { on: { click: nextItem } }, r.i + 1 < r.items.length ? t('sx.next') : t('sx.finish'))));
@@ -212,7 +237,7 @@ function renderDikte(body, r, it) {
 function typedView(res) {
   const out = el('div.typed.ru');
   for (const o of res.ops || []) {
-    if (o.c === 'miss') { out.append(el('span.tk-miss', ' ' + '_'.repeat(Math.min(6, (o.e || '').length)) + ' '), ' '); continue; }
+    if (o.c === 'miss') { out.append(missMark(o.e), ' '); continue; }
     const cls = o.c === 'extra' ? 'yapi' : o.c;
     const span = el('span.tk-' + cls);
     if ((o.c === 'imla' || o.c === 'sonek') && o.e && o.t) {
@@ -262,93 +287,16 @@ async function submitDikte(typed) {
   go('ses');
 }
 
-// ---------------------------------------------------------------- gölgeleme
-let recState = null; // { stream, mr, chunks, url }
-const mine = new Audio();
-mine.setAttribute('playsinline', '');
-
-function stopRec() {
-  if (recState && recState.mr && recState.mr.state === 'recording') { try { recState.mr.stop(); } catch (e) {} }
-  if (recState && recState.stream) recState.stream.getTracks().forEach(tr => tr.stop());
-  recState = recState && recState.url ? { url: recState.url } : null;
-}
-
-const canRecord = () => !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
-
-async function startRec(onChange) {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mr = new MediaRecorder(stream);
-    const chunks = [];
-    const idx = ui.run ? ui.run.i : -1;
-    mr.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
-    mr.onstop = () => {
-      stream.getTracks().forEach(tr => tr.stop());
-      if (recState && recState.url) URL.revokeObjectURL(recState.url);
-      const url = chunks.length ? URL.createObjectURL(new Blob(chunks, { type: mr.mimeType || 'audio/mp4' })) : null;
-      recState = { url };
-      if (ui.run && ui.run.i === idx) { ui.run.rec = url; onChange(); }
-    };
-    audio.stop();
-    mr.start();
-    recState = { stream, mr, chunks };
-    onChange();
-  } catch (e) {
-    toast(t('sx.micNo'));
-  }
-}
-
-function playMine() {
-  return new Promise(res => {
-    const u = ui.run && ui.run.rec;
-    if (!u) return res();
-    mine.onended = () => res(); mine.onerror = () => res();
-    mine.src = u; mine.play().catch(() => res());
-  });
-}
-
-function renderGolge(body, r, it) {
-  if (r.hide == null) r.hide = false;
-  const recording = recState && recState.mr && recState.mr.state === 'recording';
-  const rerender = () => go('ses');
-  const card = el('article.paper.sx-card',
-    el('div.ck', el('span', t('sx.words', { n: it.n })),
-      el('button.plink', { on: { click: () => { r.hide = !r.hide; rerender(); } } }, r.hide ? t('sx.show') : t('sx.hide'))),
-    r.hide ? el('div.sx-hidden', t('sx.hiddenNote')) : el('div.sx-text.ru', it.ru),
-    !r.hide && it.tr ? el('div.meta', it.tr) : null,
-    el('div.sx-plays', playBtn(it.k, 1, t('sx.listen')), playBtn(it.k, 0.8, '0.8×')));
-  const tools = el('div.sx-rec');
-  if (canRecord()) {
-    tools.append(
-      el('button.btn' + (recording ? '.btn-accent' : ''), { on: { click: () => { if (recording) { try { recState.mr.stop(); } catch (e) {} } else startRec(rerender); } } },
-        el('span.sx-dot' + (recording ? '.on' : '')), recording ? t('sx.recStop') : t('sx.rec')),
-      el('button.btn', { disabled: !r.rec || recording, on: { click: () => playMine() } }, t('sx.mine')),
-      el('button.btn', { disabled: !r.rec || recording, on: { click: async () => { await audio.play(it.k); await playMine(); } } }, t('sx.compare')));
-  } else tools.append(el('div.note', t('sx.noRec')));
-  put(body, card, tools, el('div.note.sx-tip', t('sx.golgeTip')),
-    el('div.sx-nav', el('span'),
-      el('button.btn.btn-primary', { on: { click: () => { markGolge(); nextItem(); } } }, r.i + 1 < r.items.length ? t('sx.next') : t('sx.finish'))));
-}
-
-function markGolge() {
-  const r = ui.run, it = r.items[r.i];
-  R.seen[it.k] = (R.seen[it.k] || 0) + 1;
-  dayRec().gl++;
-  r.res.push({ k: it.k, rec: !!r.rec });
-  save();
-}
-
 // ---------------------------------------------------------------- sonuç ve imla defteri
 function renderResult(wrap) {
   const r = ui.run;
-  const dk = r.kind === 'dikte';
-  const avg = dk && r.res.length ? r.res.reduce((a, x) => a + x.score, 0) / r.res.length : null;
+  const avg = r.res.length ? r.res.reduce((a, x) => a + x.score, 0) / r.res.length : 0;
   put(wrap,
-    el('div.kicker', t(dk ? 'sx.dikteK' : 'sx.golgeK')),
+    el('div.kicker', t('sx.dikteK')),
     el('h1.h1', t('sx.done')),
-    el('div.panel', el('div.mono', { style: { fontSize: '28px' } }, dk ? Math.round(avg * 100) + '%' : String(r.res.length)),
-      el('div.note', dk ? t('sx.doneDikte', { n: r.res.length, full: r.res.filter(x => x.score === 1).length }) : t('sx.doneGolge', { n: r.res.length, r: r.res.filter(x => x.rec).length }))),
-    el('button.btn.btn-primary.btn-wide', { on: { click: () => start(r.kind) } }, t('sx.again')),
+    el('div.panel', el('div.mono', { style: { fontSize: '28px' } }, Math.round(avg * 100) + '%'),
+      el('div.note', t('sx.doneDikte', { n: r.res.length, full: r.res.filter(x => x.score === 1).length }))),
+    el('button.btn.btn-primary.btn-wide', { on: { click: start } }, t('sx.again')),
     el('button.btn.btn-wide', { on: { click: () => { ui.run = null; nav('home'); } } }, t('sx.back')));
 }
 
@@ -365,3 +313,8 @@ function renderImla(wrap) {
 }
 
 export function openSes() { ui.view = 'home'; go('ses'); }
+
+// Eksik kelime: uzunluğuna göre kesik çizgili boşluk
+function missMark(e) {
+  return el('span.tk-miss', { 'aria-label': 'eksik kelime', style: { width: Math.min(5, 0.9 + 0.32 * (e || '').length).toFixed(2) + 'em' } });
+}

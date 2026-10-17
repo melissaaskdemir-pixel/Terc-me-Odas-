@@ -398,7 +398,7 @@ function tokenView(r) {
   // yazılanı, hatalı kısımlar işaretli gösterir
   const out = el('div.typed.ru');
   for (const o of r.ops || []) {
-    if (o.c === 'miss') { out.append(el('span.tk-miss', ' ' + '_'.repeat(Math.min(6, o.e.length)) + ' '), ' '); continue; }
+    if (o.c === 'miss') { out.append(missMark(o.e), ' '); continue; }
     const cls = o.c === 'extra' ? 'yapi' : o.c;
     const span = el('span.tk-' + cls);
     if ((o.c === 'imla' || o.c === 'sonek') && o.e && o.t) {
@@ -601,4 +601,9 @@ function more() {
   sess._exhausted = false;
   buildFrame();
   next();
+}
+
+// Eksik kelime: uzunluğuna göre kesik çizgili boşluk
+function missMark(e) {
+  return el('span.tk-miss', { 'aria-label': 'eksik kelime', style: { width: Math.min(5, 0.9 + 0.32 * (e || '').length).toFixed(2) + 'em' } });
 }

@@ -6,6 +6,7 @@ import { CARDS, DECKS, CONTENT_VERSION, importPack, removePack, readPackFile } f
 import * as plan from './plan.js';
 import * as audio from './audio.js';
 import { okumaAudioKeys } from './okuma.js';
+import { insanAudioKeys } from './ses.js';
 import { dictStatus, downloadDict } from './sozluk.js';
 import { loadYds } from './yds.js';
 import * as db from './db.js';
@@ -233,6 +234,7 @@ async function renderAyar(body) {
     dlRow(d.ad, null, () => audio.cachedCount(d.id), p => audio.downloadDeck(d.id, p));
   }
   dlRow(t('a.dlOkuma'), t('a.dlOkumaSub'), async () => audio.cachedKeys(await okumaAudioKeys()), async p => audio.downloadKeys(await okumaAudioKeys(), p));
+  dlRow(t('a.dlInsan'), t('a.dlInsanSub'), async () => audio.cachedKeys(await insanAudioKeys()), async p => audio.downloadKeys(await insanAudioKeys(), p));
   dlRow(t('a.dlDict'), t('a.dlDictSub'), dictStatus, downloadDict);
   // yedek
   const a = backupAgeDays();

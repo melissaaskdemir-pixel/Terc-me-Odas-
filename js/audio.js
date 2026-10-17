@@ -15,8 +15,8 @@ player.addEventListener('ended', () => fireEnd());
 player.addEventListener('error', () => fireEnd());
 function fireEnd() { const f = endCb; endCb = null; if (f) f(); }
 
-// 'x:' önekli anahtarlar Xenia (okuma cümleleri), 'a:' önekliler Aidar (okuma kelimeleri)
-export const clipUrl = key => (key[1] === ':' && (key[0] === 'x' || key[0] === 'a'))
+// 'x:' önekli anahtarlar Xenia (okuma cümleleri), 'a:' önekliler Aidar (okuma kelimeleri), 't:' önekliler Tatoeba insan sesi
+export const clipUrl = key => (key[1] === ':' && (key[0] === 'x' || key[0] === 'a' || key[0] === 't'))
   ? `audio/${key[0]}/${key.slice(2)}.mp4` : `audio/${S.settings.voice || 'a'}/${key}.mp4`;
 
 // Arka planda önbelleğe al (internetsiz okuma için); çalmaz
