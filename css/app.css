@@ -538,3 +538,28 @@ body.tool-on .mk { touch-action: pan-y; -webkit-user-select: none; user-select: 
 /* Yazma */
 .yz-cat .yz-ad { font-family: 'PT Serif', serif; font-size: 19px; }
 .yz-cat .slot { font-family: 'PT Mono', monospace; font-size: 11.5px; color: var(--muted); }
+
+/* Gramer haritası */
+.gm-bar { display: flex; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.gm-bar i { display: block; height: 100%; }
+.gm-bar i.ok { background: #6F8F3A; }
+.gm-bar i.rep { background: #C9A227; }
+.gm-lv .chip { font-family: 'PT Mono', monospace; font-size: 14px; }
+.gm-chipn { font-size: 11px; opacity: .7; }
+.gm-topic .gm-t { font-family: 'PT Serif', serif; font-size: 18px; }
+.gm-topic .slot { font-family: 'PT Mono', monospace; font-size: 11.5px; color: var(--muted); }
+.gm-dots { display: inline-flex; gap: 3px; flex-wrap: wrap; }
+.gm-dots i { width: 7px; height: 7px; border-radius: 2px; background: var(--line2); }
+.gm-dots i.ok { background: #6F8F3A; }
+.gm-dots i.rep { background: #C9A227; }
+.gm-open { display: flex; flex-direction: column; gap: 10px; padding: 8px 0 16px; min-height: 0 !important; border-bottom: 1px solid var(--line); }
+.gm-card { padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+.gm-ctx { font-family: 'PT Mono', monospace; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--p-kicker); }
+.gm-b { font-family: 'PT Serif', serif; font-size: 18px; font-weight: 700; }
+.gm-k { font-size: 15px; line-height: 1.45; }
+.gm-ex .ru { font-family: 'PT Serif', serif; font-size: 17px; line-height: 1.35; }
+.gm-ex .tr { font-size: 13.5px; color: var(--p-muted); }
+.gm-st { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+.gm-st .btn.on { background: var(--p-ink); color: var(--paper); border-color: var(--p-ink); }
+.gm-all { font-size: 13px; }
+.gm-open, .on-famopen { align-items: stretch !important; }

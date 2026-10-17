@@ -79,11 +79,7 @@ export function renderCalis(root) {
     el('button.btn.btn-big', { on: { click: () => go('onek') } }, el('span', t('c.onek')), el('span.mono.acc', t('c.onekSub', { n: DECKS.get('onek')?.cards.length || 0 }))),
     el('button.btn.btn-big', { on: { click: () => openSes() } }, el('span', t('c.sesOpen')), el('span.mono.acc', t('c.sesSub'))),
     el('button.btn.btn-big', { on: { click: () => go('yazma') } }, el('span', t('c.yazmaOpen')), el('span.mono.acc', t('c.onekSub', { n: DECKS.get('yazma')?.cards.length || 0 }))),
-    el('div.kicker', t('c.soon')),
-    el('div.list',
-      ...[['c.gramer', 'v0.4']].map(([k, v]) =>
-        el('div.lock', el('span', t(k)), el('span.r', v)))),
-    el('div.note', t('c.soonNote')),
+    el('button.btn.btn-big', { on: { click: () => go('gramer') } }, el('span', t('c.gramerOpen')), el('span.mono.acc', t('c.gramerSub'))),
   );
   root.append(wrap);
 }

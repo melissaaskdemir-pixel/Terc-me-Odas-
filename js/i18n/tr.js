@@ -94,12 +94,12 @@ export default {
   'b.close': 'Tamam',
 
   // çalış
-  'c.kicker': 'ÇALIŞMA DOSYALARI', 'c.title': 'Çalış', 'c.kelime': 'Kelime', 'c.open': 'AÇIK',
+  'c.kicker': 'ÇALIŞMA DOSYALARI', 'c.title': 'Çalış', 'c.kelime': 'Kartlar', 'c.open': 'TEKRAR + YENİ',
   'c.decks': 'Desteler', 'c.types': 'Kart tipi', 'c.tAll': 'Karışık', 'c.tKelime': 'Kelime', 'c.tCift': 'Fiil çifti', 'c.tYonetim': 'Yönetim',
   'c.tKoll': 'Kollokasyon', 'c.tEsanlam': 'Eş anlamlı', 'c.tOnek': 'Önek', 'c.tForm': 'Biçim', 'c.tCev': 'Çeviri', 'c.counts': '{due} tekrar bekliyor · {nw} yeni kart · bugün kalan yeni hakkı {allow}',
   'c.start': '{n} kartlık tur başlat', 'c.noNew': 'Bugünkü yeni kart hakkın doldu. İstersen bugüne özel artır.', 'c.extra10': '+10 yeni kart',
   'c.extraAdded': 'Bugün için 10 yeni kart eklendi.', 'c.errs': 'Son hatalarını çalış ({n} kart)', 'c.soon': 'Sıradaki bölümler',
-  'c.onek': 'Önekler', 'c.onekSub': '{n} kart', 'c.sesOpen': 'Dikte ve gölgeleme', 'c.sesSub': 'ses', 'c.yazmaOpen': 'Yazma', 'c.gramer': 'Gramer haritası', 'c.yazma': 'Yazma: çeviri, register, form', 'c.ses': 'Ses: dikte, gölgeleme', 'c.yds': 'YDS',
+  'c.onek': 'Önekler', 'c.onekSub': '{n} kart', 'c.sesOpen': 'Dikte ve gölgeleme', 'c.sesSub': 'ses', 'c.yazmaOpen': 'Yazma', 'c.gramerOpen': 'Gramer haritası', 'c.gramerSub': 'A1–C2', 'c.gramer': 'Gramer haritası', 'c.yazma': 'Yazma: çeviri, register, form', 'c.ses': 'Ses: dikte, gölgeleme', 'c.yds': 'YDS',
   'c.soonNote': 'Her bölüm açıldığında tek başına ya da karışık çalışılabilecek.',
 
     'on.kicker': 'FİİL ÖNEKLERİ', 'on.title': 'Önekler', 'on.intro': 'Her öneğin temel anlamı, ondan çıkan soyut anlamlar ve sınavda karışanlar. Kartlarda Türkçe anlamı ve kök ailesini görürsün, önekli fiili cümleye uygun biçimde yazarsın.',
@@ -128,6 +128,9 @@ export default {
   'yz.form': 'Biçim', 'yz.formNote': 'Cümledeki boşluğa parantezdeki sözcüğün doğru biçimini yaz.',
   'yz.reg': 'Sade → resmî', 'yz.regNote': 'Parantezdeki gündelik ifadenin resmî, yazılı dildeki karşılığını cümleye uygun biçimde yaz.',
   'yz.cev': 'Çeviri', 'yz.cevNote': 'Türkçe cümleyi Rusçaya çevir. Kelime sırası serbest. Doğru ama listede olmayan bir çeviri yazarsan "Bence doğruydu" de; uygulama onu hatırlar.',
+  'gm.kicker': 'ГРАММАТИЧЕСКИЙ МИНИМУМ', 'gm.title': 'Gramer haritası', 'gm.intro': 'ТРКИ seviyelerine göre konu iskeleti: her maddede kural, örnek ve tipik hata. Bildiğin maddeyi «Tamam», yeniden bakmak istediğini «Tekrar» diye işaretle; konunun altındaki düğme seni ilgili çalışma bölümüne götürür.',
+  'gm.tot': '{ok}/{n} madde tamam · {rep} tekrar', 'gm.search': 'Konu ara: ortaç, свой, -у, sayı…', 'gm.extra': 'Yazım', 'gm.markAll': 'Bu seviyeyi tamam say',
+  'gm.study': 'Çalış: {m}', 'gm.trap': 'Tipik hata', 'gm.rep': 'Tekrar', 'gm.ok': 'Tamam', 'gm.hits': '{n} madde bulundu.',
   'c.ydsOpen': 'YDS denemeleri', 'c.ydsSub': '80 soru',
 
   // yds

@@ -16,6 +16,17 @@ Adres: https://melissaaskdemir-pixel.github.io/Terc-me-Odas-/
 
 Bakanlık terimleri gibi açık lisanslı olmayan içerik bu sitede yayımlanmaz; kişisel paket dosyasıyla sadece telefona yüklenir.
 
+## v0.2–v0.4
+
+- Okuma: uyarlanmış ve özgün paragraflar, cümle sesleri, kelimeye dokununca sözlük
+- Sözlük: internetsiz arama, çekim tabloları, sıklık sırası
+- Kapsam: kelime dağarcığı tahmini ve testi
+- YDS: üretilmiş denemeler, serbest soru çözme ve açıklamalı alıştırma bankası, kalem ve silgi
+- Önekler: 20 öneğin anlamları, kök aileleri, kurallar ve önek kartları
+- Ses: dikte (kelime kelime puan, imla defteri) ve gölgeleme (kayıt ve karşılaştırma)
+- Yazma: biçim, sade → resmî ve çeviri kartları
+- Gramer haritası: A1–C2 konu iskeleti, madde madde işaretleme
+
 ## Yapı
 
 - `index.html`, `css/`, `js/`: uygulama (derleme adımı yok)
