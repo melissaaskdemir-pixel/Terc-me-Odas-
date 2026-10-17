@@ -11,6 +11,8 @@ export const DEFAULTS = {
   rate: 1,              // ses hızı
   voice: 'a',           // a = Aidar
   sfxStamp: true, sfxType: false, sfxPaper: true,
+  sfxTap: true,         // düğmelere dokununca kısa tık
+  haptic: true,         // dokunuşta titreşim (iPhone: iOS 18 ve sonrası)
   anim: true,
   theme: 'dark',        // dark | paper | auto
   advance: 1.2,         // doğru cevaptan sonra geçiş süresi (sn)

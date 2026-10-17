@@ -6,6 +6,7 @@ import { CARDS, loadMorph } from './decks.js';
 import { check, charMarks, latinOnly, tokens } from './check.js';
 import * as audio from './audio.js';
 import { toast } from './ui.js';
+import { haptic } from './fx.js';
 import { go } from './main.js';
 import { loadOkuma } from './okuma.js';
 import { lookup } from './sozluk.js';
@@ -189,11 +190,13 @@ function renderDikte(body, r, it) {
     put(card, ta);
     put(body, card, el('div.sx-nav',
       el('button.btn', { on: { click: () => submitDikte(null) } }, t('sx.dontKnow')),
-      el('button.btn.btn-primary', { on: { click: () => submitDikte(ta.value) } }, t('sx.check'))));
+      el('button.btn.btn-primary', { 'data-fx': 'own', on: { click: () => submitDikte(ta.value) } }, t('sx.check'))));
     setTimeout(() => ta.focus(), 50);
     return;
   }
   const res = r.last;
+  if (r.fresh && res.score === 1) put(card, el('div.stamp', 'ВЕРНО'));
+  r.fresh = false;
   put(card, el('section.fb', el('div.verdict', el('span.k.' + (res.score === 1 ? 'ok' : res.score >= 0.7 ? 'imla' : 'yapi'), t('sx.score', { p: Math.round(res.score * 100) }))),
     res.typed ? el('div.lab', t('st.youWrote')) : null,
     res.typed ? typedView(res) : null,
@@ -223,8 +226,8 @@ function typedView(res) {
 
 async function submitDikte(typed) {
   const r = ui.run, it = r.items[r.i];
-  if (typed != null && !typed.trim()) { toast(t('sx.typeFirst')); return; }
-  if (typed && latinOnly(typed)) { toast(t('st.keyboard')); return; }
+  if (typed != null && !typed.trim()) { haptic(); toast(t('sx.typeFirst')); return; }
+  if (typed && latinOnly(typed)) { haptic(); toast(t('st.keyboard')); return; }
   audio.stop();
   let res;
   const E = tokens(it.ru).length;
@@ -254,6 +257,8 @@ async function submitDikte(typed) {
   r.last = res; r.done = true;
   await save();
   audio.sfx(res.score === 1 ? 'stamp' : 'soft');
+  if (typed != null) haptic(res.score === 1 ? 'ok' : res.score >= 0.7 ? 'tick' : 'bad');
+  r.fresh = true;
   go('ses');
 }
 

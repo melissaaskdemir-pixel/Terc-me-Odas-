@@ -7,6 +7,7 @@ import { check, norm, tokens, charMarks, hintText, tagsLabel, morphReady } from 
 import * as plan from './plan.js';
 import * as audio from './audio.js';
 import { bigStamp, toast } from './ui.js';
+import { haptic, pop } from './fx.js';
 import { go } from './main.js';
 import { okumaToday, okumaLabel } from './okuma.js';
 
@@ -77,7 +78,9 @@ function updateTop() {
     const again = sess.pending.length + (cur.item && cur.item.again && cur.state === 'ask' ? 1 : 0);
     f.count.textContent = `${Math.min(first, sess.base)}/${sess.base}` + (first >= sess.base && again ? ` +${again}` : '');
   }
-  f.combo.textContent = sess.combo >= 2 ? t('st.combo', { n: sess.combo }) : '';
+  const combo = sess.combo >= 2 ? t('st.combo', { n: sess.combo }) : '';
+  if (combo && combo !== f.combo.textContent) pop(f.combo);
+  f.combo.textContent = combo;
   f.pts.textContent = sess.stats.pts ? `+${sess.stats.pts}` : '';
 }
 
@@ -124,7 +127,7 @@ function next() {
   setActions(
     el('button.btn', { on: { click: dontKnow } }, t('st.dontKnow')),
     el('button.btn.hint', { 'aria-label': t('st.hintAria'), on: { click: giveHint } }, t('st.hint')),
-    el('button.btn.btn-primary.send', { on: { click: submit } }, t('st.send')));
+    el('button.btn.btn-primary.send', { 'data-fx': 'own', on: { click: submit } }, t('st.send')));
   focusInput();
   updateTop();
   audio.sfx('paper');
@@ -181,9 +184,10 @@ function promptNodes() {
   return out;
 }
 
-function renderCard(extra) {
-  const card = el('article.paper.st-card.cardin', { 'aria-label': t('st.card'), 'data-id': cur.card.id, 'data-v': String(cur.item.variant || 0) },
-    el('div.ck', el('span', kicker()), el('span', cur.item.again ? t('st.again') : (cur.item.isNew ? t('st.new') : ''))),
+function renderCard(extra, anim = 'cardin') {
+  const tag = cur.item.again ? 'again' : cur.item.isNew ? 'new' : '';
+  const card = el('article.paper.st-card' + (anim ? '.' + anim : ''), { 'aria-label': t('st.card'), 'data-id': cur.card.id, 'data-v': String(cur.item.variant || 0) },
+    el('div.ck', el('span', kicker()), tag ? el('span.tag.' + tag, t(tag === 'again' ? 'st.again' : 'st.new')) : null),
     ...promptNodes(),
     cur.item.isNew && cur.state === 'ask' && !cur.item.again ? el('div.swipehint', t('st.swipe')) : null,
     extra || null);
@@ -221,7 +225,7 @@ function submit() {
   if (!typed.trim()) { shake(); return; }
   cur.ms = performance.now() - cur.shownAt;
   const r = check(typed, cur.ex.accepted, checkOpts());
-  if (r.res === 'klavye') { toast(t('st.keyboard')); return; }
+  if (r.res === 'klavye') { haptic(); toast(t('st.keyboard')); return; }
   if (r.res === 'empty') { shake(); return; }
   cur.res = r;
   cur.typed = typed;
@@ -234,7 +238,8 @@ function checkOpts() {
   return { partner: c.pa, user: S.prof.alts?.[c.id], wrongAspect: c.t === 'cift' ? [c.v] : null, freeOrder: c.t === 'ceviri' };
 }
 
-function shake() {
+function shake(kind = 'tick') {
+  haptic(kind);
   const i = cur.f.input;
   i.classList.remove('shake');
   void i.offsetWidth;
@@ -255,9 +260,10 @@ async function onRight(r) {
   cur.fill = cur.ex.show;
   cur.fillCls = 'ok';
   const combo = cur.sess.combo >= 5 && cur.sess.combo % 5 === 0;
-  const card = renderCard(feedback({ verdict: 'ok', compact: true, r }));
+  const card = renderCard(feedback({ verdict: 'ok', compact: true, r }), 'fx-ok');
   card.append(el('div.stamp' + (combo ? '.accent' : ''), combo ? 'ОТЛИЧНО' : 'ВЕРНО'));
   audio.sfx('stamp');
+  haptic('ok');
   setActions(el('button.btn.btn-ok', { on: { click: advance } }, t('st.next')));
   updateTop();
   const res = await pr;
@@ -293,12 +299,13 @@ function onWrong(r) {
   setLabel(t('st.retype'));
   cur.fill = cur.ex.show;
   cur.fillCls = '';
-  renderCard(feedback({ verdict: r.res, r }));
+  renderCard(feedback({ verdict: r.res, r }), 'fx-bad');
   if (set('autoplay')) audio.playNow(cur.ex.audio) || audio.play(cur.ex.audio);
   audio.sfx('soft');
+  haptic(r.res === 'imla' ? 'tick' : 'bad');
   setActions(
     el('button.btn', { on: { click: claimRight } }, t('st.claim')),
-    el('button.btn.btn-primary.send', { on: { click: submit } }, t('st.send')));
+    el('button.btn.btn-primary.send', { 'data-fx': 'own', on: { click: submit } }, t('st.send')));
   focusInput();
 }
 
@@ -314,9 +321,9 @@ function dontKnow() {
   setLabel(t('st.typeOnce'));
   cur.fill = cur.ex.show;
   cur.fillCls = '';
-  renderCard(feedback({ verdict: 'bil' }));
+  renderCard(feedback({ verdict: 'bil' }), null);
   if (set('autoplay')) audio.playNow(cur.ex.audio) || audio.play(cur.ex.audio);
-  setActions(el('button.btn.btn-primary.send', { on: { click: submit } }, t('st.send')));
+  setActions(el('button.btn.btn-primary.send', { 'data-fx': 'own', on: { click: submit } }, t('st.send')));
   focusInput();
 }
 
@@ -325,12 +332,13 @@ async function retype(typed) {
   const r = check(typed, cur.ex.accepted, checkOpts());
   if (r.res !== 'ok') {
     cur.retypeFails++;
-    shake();
+    shake('bad');
     if (cur.retypeFails >= 2) cur.f.hint.textContent = cur.ex.show;
     return;
   }
   cur.f.input.classList.remove('bad');
   cur.f.input.classList.add('ok');
+  haptic();
   cur.state = 'done';
   const res = await plan.recordAnswer(cur.sess, cur.item, {
     res: cur.res.res, typed: cur.typed || '', exp: cur.ex.show, ms: cur.ms, hint: cur.hint, why: cur.res.why || '',
@@ -362,6 +370,7 @@ async function markKnown() {
   const card = cur.cardEl;
   card.append(el('div.stamp', 'ИЗВЕСТНО'));
   audio.sfx('stamp');
+  haptic('ok');
   updateTop();
   await afterRecord(res);
   setTimeout(advance, 450);
@@ -474,11 +483,11 @@ async function reportStress() {
 
 // ---------------------------------------------------------------- kaydırma: "biliyorum"
 function enableSwipe(card) {
-  let x0 = 0, y0 = 0, dx = 0, active = false, decided = false, horiz = false;
+  let x0 = 0, y0 = 0, dx = 0, active = false, decided = false, horiz = false, past = false;
   card.addEventListener('touchstart', e => {
     if (cur.state !== 'ask') return;
     const p = e.touches[0];
-    x0 = p.clientX; y0 = p.clientY; dx = 0; active = true; decided = false; horiz = false;
+    x0 = p.clientX; y0 = p.clientY; dx = 0; active = true; decided = false; horiz = false; past = false;
     card.style.transition = 'none';
   }, { passive: true });
   card.addEventListener('touchmove', e => {
@@ -488,6 +497,7 @@ function enableSwipe(card) {
     if (!decided && (Math.abs(mx) > 10 || Math.abs(my) > 10)) { decided = true; horiz = Math.abs(mx) > Math.abs(my) * 1.3; }
     if (!horiz) return;
     dx = Math.min(0, mx);
+    if ((dx < -90) !== past) { past = dx < -90; haptic(); }
     card.style.transform = `translateX(${dx}px) rotate(${dx / 40}deg)`;
     card.style.opacity = String(1 + dx / 400);
   }, { passive: true });

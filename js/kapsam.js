@@ -7,6 +7,7 @@ import { loadIndex, rankMap } from './sozluk.js';
 import { sampleTexts } from './okuma.js';
 import { go } from './main.js';
 import { sfx } from './audio.js';
+import { haptic } from './fx.js';
 
 let K = null, kP = null;
 const ui = { curve: 'yds', n: null, sample: 0, test: null };
@@ -110,7 +111,13 @@ async function renderMain(wrap, samples) {
   };
   const textNote = el('div.meta.small');
 
-  slider.addEventListener('input', () => { ui.n = fromX(slider.value / 1000); draw(); });
+  // her %5 kapsamda bir hafif tık: kaydırıcı çentikli hissettirir
+  let notch = Math.floor(coverage(ui.n, ui.curve) / 5);
+  slider.addEventListener('input', () => {
+    ui.n = fromX(slider.value / 1000); draw();
+    const k = Math.floor(coverage(ui.n, ui.curve) / 5);
+    if (k !== notch) { notch = k; haptic(); }
+  });
 
   const seg = el('div.seg', { role: 'group' }, ...[['yds', t('k.yds')], ['gun', t('k.gun')]].map(([v, lab]) => el('button', {
     'aria-pressed': String(ui.curve === v),

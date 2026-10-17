@@ -36,7 +36,7 @@ export function renderArsiv(root) {
     wrap.append(el('div.warn', el('span.t', a == null ? t('a.bkNever') : t('a.bkOld', { n: a })),
       el('button.btn.btn-sm.btn-accent', { on: { click: doBackup } }, t('a.bkNow'))));
   }
-  const tabs = el('div.chips');
+  const tabs = el('div.chips.tabrow');
   const body = el('div.sect');
   for (const [k, lab] of [['hata', 'a.tHata'], ['stat', 'a.tStat'], ['rapor', 'a.tRapor'], ['ayar', 'a.tAyar']]) {
     const b = el('button.chip', { 'aria-pressed': String(ui.tab === k) }, t(lab));
@@ -197,6 +197,8 @@ async function renderAyar(body) {
     row(t('a.sfxStamp'), null, switchEl(st.sfxStamp, v => save('sfxStamp', v), t('a.sfxStamp'))),
     row(t('a.sfxPaper'), null, switchEl(st.sfxPaper, v => save('sfxPaper', v), t('a.sfxPaper'))),
     row(t('a.sfxType'), null, switchEl(st.sfxType, v => save('sfxType', v), t('a.sfxType'))),
+    row(t('a.sfxTap'), t('a.sfxTapSub'), switchEl(st.sfxTap, v => save('sfxTap', v), t('a.sfxTap'))),
+    row(t('a.haptic'), t('a.hapticSub'), switchEl(st.haptic, v => save('haptic', v), t('a.haptic'))),
     el('div.kicker', t('a.gLook')),
     row(t('a.theme'), null, seg([['dark', t('a.thDark')], ['paper', t('a.thPaper')], ['auto', t('a.thAuto')]], st.theme, async v => { await save('theme', v); applyTheme(); })),
     row(t('a.anim'), t('a.animSub'), switchEl(st.anim, async v => { await save('anim', v); document.body.classList.toggle('anim', v); }, t('a.anim'))),

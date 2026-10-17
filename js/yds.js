@@ -4,6 +4,7 @@ import { t } from './i18n.js';
 import * as db from './db.js';
 import { S } from './store.js';
 import { modal, toast, confirmBox, bigStamp } from './ui.js';
+import { haptic } from './fx.js';
 import { go } from './main.js';
 import { sfx } from './audio.js';
 
@@ -443,11 +444,12 @@ function clearMarks(ctx, q, P) {
 }
 
 // Şık: kalem/silgi açıkken dokunmak şıkkı eler (üstünü çizer), kapalıyken seçer
-function optionNode(q, k, ctx, { selected, onPick, state } = {}) {
+function optionNode(q, k, ctx, { selected, onPick, state, own, fresh } = {}) {
   const struck = (ctx?.strike?.[q.id] || []).includes(k);
   const o = q.o[k];
-  const cls = 'button.yds-opt' + (selected ? '.on' : '') + (struck ? '.x' : '') + (state === 'ok' ? '.ok' : state === 'bad' ? '.bad' : '');
+  const cls = 'button.yds-opt' + (selected ? '.on' : '') + (struck ? '.x' : '') + (state === 'ok' ? '.ok' : state === 'bad' ? '.bad' : '') + (fresh ? '.fx-now' : '');
   return el(cls, {
+    'data-fx': own && !ui.tool ? 'own' : null,
     on: {
       click: () => {
         if (ui.tool && ctx && !state) {
@@ -621,6 +623,8 @@ function renderCasual(root, wrap) {
   document.body.classList.add('studying');
   root.innerHTML = '';
   const answered = c.ans != null;
+  const fresh = !!c.fresh;
+  c.fresh = false;
   const day = casDay();
   const rerender = () => renderCasual(root, wrap);
   const pick = async (k, strikeOnly) => {
@@ -628,7 +632,8 @@ function renderCasual(root, wrap) {
     if (answered) return;
     c.ans = k;
     day.n++; c.n++;
-    if (k === q.a) { day.ok++; c.ok++; sfx('stamp'); } else sfx('soft');
+    if (k === q.a) { day.ok++; c.ok++; sfx('stamp'); haptic('ok'); } else { sfx('soft'); haptic('bad'); }
+    c.fresh = true;
     R.seen[q.id] = (R.seen[q.id] || 0) + 1;
     await save();
     ui._showFb = true;
@@ -645,8 +650,8 @@ function renderCasual(root, wrap) {
       el('div.paper.yds-q',
         q.t ? el('div.yds-stem' + (q.s === 'diyalog' ? '.dlg' : '') + (/[а-яё]/i.test(q.t) ? '.ru' : ''), stemNode(q, ctx)) : null,
         el('div.yds-opts', ...q.o.map((_, k) => optionNode(q, k, ctx, answered
-          ? { state: k === q.a ? 'ok' : k === c.ans ? 'bad' : 'none' }
-          : { onPick: pick }))),
+          ? { state: k === q.a ? 'ok' : k === c.ans ? 'bad' : 'none', fresh: fresh && (k === q.a || k === c.ans) }
+          : { onPick: pick, own: true }))),
         answered ? el('div.meta', c.ans === -1 ? t('y.shown', { b: LETTERS[q.a] }) : c.ans === q.a ? t('y.right') : t('y.wrongWas', { a: LETTERS[c.ans], b: LETTERS[q.a] })) : null,
         answered && q.x ? el('div.yds-x', q.x) : null,
         answered && !q.x ? el('div.meta.small', t(isOsym(q) ? 'y.noExplPack' : 'y.noExpl')) : null)),

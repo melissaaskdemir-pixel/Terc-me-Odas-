@@ -51,7 +51,7 @@ export default {
   'm.knownDelta': '+{n} bu hafta', 'm.learning': '{n} kart öğreniliyor', 'm.openSet': 'Günün setini aç', 'm.continueSet': 'Günün setine devam',
   'm.extraSet': 'Ekstra tur', 'm.cardsLeft': '{n} kart', 'm.plus20': '+20 kart', 'm.plan': 'Bugün: {due} tekrar, {nw} yeni kart hakkı',
   'm.mini': '{n} kartlık mini set: seriyi koru', 'm.ptsToday': 'puan bugün', 'm.acc7': 'doğruluk, 7 gün', 'm.best': 'en uzun seri',
-  'm.lKelime': 'Kelime', 'm.lDue': '{n} tekrar', 'm.lOkuma': 'Okuma', 'm.lHata': 'Hata defteri', 'm.lHataN': '{n} kart',
+  'm.lKelime': 'Kartlar', 'm.lDue': '{n} tekrar', 'm.lOkuma': 'Okuma', 'm.lHata': 'Hata defteri', 'm.lHataN': '{n} kart',
   'm.yds': 'YDS tahmini', 'm.ydsNote': 'Son ölçüm: 2021 denemesi. Deneme çözdükçe bu puan güncellenir.', 'm.ydsEst': 'Son {n} denemenin ortalaması. Dokun: YDS.',
   'm.bet': 'Seri iddiası', 'm.betOffer': '7 gün üst üste halkayı kapatırsan bir seri dondurma kazanırsın. Kaybedersen hiçbir şey eksilmez.',
   'm.betStart': 'İddiaya gir', 'm.betConfirm': '7 gün boyunca her gün halkayı kapatmaya var mısın?', 'm.betYes': 'Varım', 'm.betNo': 'Sonra',
@@ -135,7 +135,7 @@ export default {
 
   // yds
   'y.kicker': 'YDS RUSÇA', 'y.title': 'Denemeler', 'y.genTag': 'üretilmiş + ÖSYM', 'y.lastScore': 'son: {s} · {d}', 'y.notTaken': 'çözülmedi',
-  'y.estNote': 'Son {n} denemenin ortalaması (her doğru 1,25 puan).', 'y.estNone': 'Henüz deneme yok; bu 2021 denemesindeki puanın.',
+  'y.estNote': 'Son {n} denemenin ortalaması (her doğru 1,25 puan).', 'y.estNone': 'Uygulamada henüz deneme çözülmedi; bu, 2021 sınavındaki puanın.',
   'y.resume': 'Denemeye dön', 'y.left': 'kalan {t}', 'y.settings': 'Deneme ayarları', 'y.size': 'Uzunluk', 'y.sizeSub': 'Tam: 80 soru, 180 dk · Yarım: 40 soru, 90 dk',
   'y.full': 'Tam', 'y.half': 'Yarım', 'y.mode': 'Koşul', 'y.real': 'Gerçek', 'y.split': 'Bölünebilir',
   'y.realSub': 'Süre çıksan da işler; süre bitince kağıt toplanır.', 'y.splitSub': 'Sadece ekran açıkken süre işler; ara verip sonra devam edebilirsin.',
@@ -211,7 +211,7 @@ export default {
   // arşiv
   'a.kicker': 'АРХИВ', 'a.title': 'Arşiv', 'a.bkNever': 'Hiç yedek alınmadı. Telefonun silinirse ilerlemen gider.',
   'a.bkOld': 'Son yedek {n} gün önce. Yeni yedek al.', 'a.bkNow': 'Yedeği indir', 'a.bkDot': 'yedek uyarısı',
-  'a.tHata': 'Hata defteri', 'a.tStat': 'İstatistik', 'a.tRapor': 'Haftalık rapor', 'a.tAyar': 'Ayarlar',
+  'a.tHata': 'Hata defteri', 'a.tStat': 'İstatistik', 'a.tRapor': 'Rapor', 'a.tAyar': 'Ayarlar',
   'a.eAll': 'Tümü', 'a.hataNote': 'Son 30 günün hataları. Her biri bir kartın hangi biçimde kaçtığını gösterir.',
   'a.studyErrs': 'Bu kartları çalış ({n})', 'a.noErr': 'Bu türde hata yok.',
   'a.sKnown': 'biliniyor', 'a.sLearning': 'öğreniliyor', 'a.sNew': 'henüz görülmedi', 'a.sAnswers': 'toplam cevap', 'a.sAcc7': 'doğruluk, 7 gün',
@@ -223,8 +223,9 @@ export default {
   'a.gDecks': 'Desteler', 'a.deckSub': '{n} kart · yeni kart payı',
   'a.gSound': 'Ses', 'a.autoplay': 'Cevaptan sonra seslendir', 'a.rate': 'Konuşma hızı', 'a.voice': 'Kelime sesi', 'a.voiceSub': 'Okuma cümleleri Xenia sesiyle',
   'a.sfxStamp': 'Mühür sesi', 'a.sfxPaper': 'Kâğıt sesi', 'a.sfxType': 'Daktilo sesi',
+  'a.sfxTap': 'Dokunma sesi', 'a.sfxTapSub': 'düğmelere dokununca kısa bir tık', 'a.haptic': 'Titreşim', 'a.hapticSub': 'dokunuşta ve cevapta hafif titreşim (iPhone: iOS 18 ve sonrası)',
   'a.gLook': 'Görünüm', 'a.theme': 'Tema', 'a.thDark': 'Karanlık', 'a.thPaper': 'Kâğıt', 'a.thAuto': 'Otomatik',
-  'a.anim': 'Animasyonlar', 'a.animSub': 'kapalıyken mühürler anında belirir', 'a.advance': 'Doğru cevaptan sonra geçiş',
+  'a.anim': 'Animasyonlar', 'a.animSub': 'kapalıyken mühürler anında belirir, dokunma dalgası çizilmez', 'a.advance': 'Doğru cevaptan sonra geçiş',
   'a.gAudio': 'İnternetsiz paketler', 'a.audioNote': 'Sesler ve sözlük maddeleri kullanıldıkça kendiliğinden saklanır. Metroda tümü hazır olsun istersen Wi-Fi\'dayken indir.',
   'a.dl': 'İndir', 'a.dlOkuma': 'Okuma dosyaları', 'a.dlOkumaSub': 'cümle ve kelime sesleri', 'a.dlDict': 'Sözlük', 'a.dlDictSub': '58 bin madde, yaklaşık 10 MB', 'a.dlDone': 'İndirildi', 'a.dlOk': 'Sesler indirildi; internetsiz çalar.', 'a.dlFail': '{n} ses indirilemedi; sonra yeniden dene.',
   'a.gBackup': 'Yedek', 'a.bkNeverShort': 'Henüz yedek yok.', 'a.bkLast': 'Son yedek {n} gün önce.', 'a.restore': 'Yedekten geri yükle',

@@ -1,6 +1,7 @@
 // Ortak arayüz parçaları: bildirim, alt pencere, büyük mühür, halka
 import { el, svg } from './util.js';
 import { sfx } from './audio.js';
+import { haptic } from './fx.js';
 
 const overlay = () => document.getElementById('overlay');
 
@@ -40,6 +41,7 @@ export function bigStamp(text, ms = 1100) {
   const n = el('div.bigstamp', { 'aria-hidden': 'true' }, text);
   document.body.append(n);
   sfx('big');
+  haptic('big');
   setTimeout(() => n.remove(), ms);
 }
 

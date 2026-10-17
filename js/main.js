@@ -7,6 +7,7 @@ import { loadDecks, loadMorph } from './decks.js';
 import * as plan from './plan.js';
 import * as audio from './audio.js';
 import { toast } from './ui.js';
+import { initFx } from './fx.js';
 import { isStudying } from './study.js';
 import { renderMasa, maybeBriefing } from './masa.js';
 import { renderCalis } from './calis.js';
@@ -20,7 +21,7 @@ import { renderSes, isSesOpen } from './ses.js';
 import { renderYazma } from './yazma.js';
 import { renderGramer } from './gramer.js';
 
-export const APP_VERSION = '0.4.4';
+export const APP_VERSION = '0.4.5';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],
@@ -47,12 +48,16 @@ export function go(name, keepScroll) {
   renderTabs();
 }
 
+let lastTab = null;
 function renderTabs() {
   const nav = document.getElementById('tabs');
   nav.innerHTML = '';
+  const sel = (TABS.find(x => x[0] === current) || TABS[0])[1];
   for (const [k, lab, , hidden] of TABS) {
     if (hidden) continue;
-    const b = el('button', { 'aria-current': k === current || (k === 'masa' && current === 'kapsam') || (k === 'calis' && (current === 'yds' || current === 'onek' || current === 'ses' || current === 'yazma' || current === 'gramer')) ? 'page' : null, on: { click: () => go(k) } }, svg(ICON[k]), t(lab));
+    const on = lab === sel;
+    const b = el('button' + (on && lastTab !== k ? '.fresh' : ''), { 'aria-current': on ? 'page' : null, on: { click: () => go(k) } }, svg(ICON[k]), t(lab));
+    if (on) lastTab = k;
     if (k === 'arsiv' && backupWarn()) b.append(el('span.dot', { 'aria-label': t('a.bkDot') }));
     nav.append(b);
   }
@@ -141,6 +146,7 @@ export async function checkUpdate() {
 // ---------------------------------------------------------------- açılış
 async function boot() {
   viewport();
+  initFx();
   await db.open();
   await loadState();
   applyTheme();

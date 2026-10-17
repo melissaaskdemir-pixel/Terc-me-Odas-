@@ -9,6 +9,8 @@ player.setAttribute('playsinline', '');
 const urls = new Map();
 let unlocked = false;
 let endCb = null;
+let lastSfx = 0;           // son efekt ya da okuma sesi (dokunma sesi üst üste binmesin)
+export const sfxAt = () => lastSfx;
 player.addEventListener('ended', () => fireEnd());
 player.addEventListener('error', () => fireEnd());
 function fireEnd() { const f = endCb; endCb = null; if (f) f(); }
@@ -74,6 +76,7 @@ export function playNow(key, rate) {
 
 function start(u, rate = S.settings.rate || 1) {
   fireEnd();
+  lastSfx = performance.now();
   return new Promise(res => {
     endCb = res;
     try {
@@ -96,6 +99,7 @@ export async function play(key, rate, fallbackText) {
 export function stop() { try { player.pause(); } catch (e) {} fireEnd(); }
 
 function speak(text, rate = 1) {
+  lastSfx = performance.now();
   return new Promise(res => {
     try {
       const u = new SpeechSynthesisUtterance(text);
@@ -149,6 +153,9 @@ export function sfx(name) {
   if (name === 'big' && !st.sfxStamp) return;
   if (name === 'type' && !st.sfxType) return;
   if (name === 'paper' && !st.sfxPaper) return;
+  const tap = name === 'tap' || name === 'sel';
+  if (tap && st.sfxTap === false) return;
+  if (!tap) lastSfx = performance.now();
   try {
     const c = ac(), t0 = c.currentTime;
     if (name === 'stamp' || name === 'big') {
@@ -172,6 +179,19 @@ export function sfx(name) {
       f.type = 'bandpass'; f.frequency.setValueAtTime(2500, t0); f.frequency.linearRampToValueAtTime(4200, t0 + 0.2); f.Q.value = 0.8;
       g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(0.05, t0 + 0.05); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.2);
       n.connect(f).connect(g).connect(c.destination); n.start(t0);
+    } else if (tap) {
+      // kısa tahta tık: çıtırtı + küçük gövde; seçimlerde biraz daha ince
+      const hi = name === 'sel';
+      const n = noise(c, 0.007), f = c.createBiquadFilter(), g = c.createGain();
+      f.type = 'highpass'; f.frequency.value = hi ? 2600 : 1700;
+      g.gain.setValueAtTime(0.05, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.007);
+      n.connect(f).connect(g).connect(c.destination); n.start(t0);
+      const o = c.createOscillator(), g2 = c.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(hi ? 940 : 560, t0); o.frequency.exponentialRampToValueAtTime(hi ? 700 : 400, t0 + 0.045);
+      g2.gain.setValueAtTime(0.0001, t0); g2.gain.linearRampToValueAtTime(hi ? 0.045 : 0.065, t0 + 0.003);
+      g2.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.055);
+      o.connect(g2).connect(c.destination); o.start(t0); o.stop(t0 + 0.06);
     } else if (name === 'soft') {
       const o = c.createOscillator(), g = c.createGain();
       o.type = 'sine'; o.frequency.value = 220;
