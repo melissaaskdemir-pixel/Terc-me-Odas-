@@ -16,7 +16,7 @@ import { renderArsiv, backupWarn } from './arsiv.js';
 import { renderKapsam } from './kapsam.js';
 import { renderYds, isExamOpen } from './yds.js';
 
-export const APP_VERSION = '0.3.2';
+export const APP_VERSION = '0.3.3';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],

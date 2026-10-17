@@ -571,12 +571,11 @@ function renderReview(root, wrap) {
 }
 
 // ---------------------------------------------------------------- serbest çözüm (süresiz, anında geri bildirim)
-// Havuz: ÖSYM kitapçıkları (çapa sınavları hariç), 2026 örneği ve alıştırma bankası. Deneme soruları hiç girmez.
+// Havuz: alıştırma bankası ve 2026 örneği. Deneme listesindeki hiçbir sınavın sorusu (ÖSYM kitapçıkları, üretilmiş denemeler, çapalar) girmez.
 function casualPool() {
   const pool = [], P = {}, ids = new Set();
   const secs = R.casSecs && R.casSecs.length ? new Set(R.casSecs) : null;
   const add = q => { if ((!secs || secs.has(q.s === 'cloze' ? 'bosluk' : q.s)) && !ids.has(q.id)) { ids.add(q.id); pool.push(q); } };
-  for (const e of OSYM?.exams || []) if (!e.anchor) { for (const p of e.p) P[p.id] = p; e.q.forEach(add); }
   (OSYM?.ornek || []).forEach(add);
   for (const p of GEN?.banka?.p || []) P[p.id] = p;
   (GEN?.banka?.q || []).forEach(add);
