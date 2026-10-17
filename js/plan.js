@@ -18,8 +18,11 @@ export function newAllowance(day = dayNum()) {
 }
 
 export function isKnown(st) { return !!st && (st.known || (st.st === fsrs.REVIEW && st.s >= 10)); }
-export function knownCount() { let n = 0; for (const st of S.cards.values()) if (CARDS.has(st.id) && isKnown(st)) n++; return n; }
-export function learningCount() { let n = 0; for (const st of S.cards.values()) if (CARDS.has(st.id) && st.st > 0 && !isKnown(st)) n++; return n; }
+// cümle alıştırmaları (biçim, register, çeviri) kelime sayacına girmez
+const NOT_WORD = new Set(['form', 'reg', 'ceviri']);
+const wordCard = id => { const c = CARDS.get(id); return !!c && !NOT_WORD.has(c.t); };
+export function knownCount() { let n = 0; for (const st of S.cards.values()) if (wordCard(st.id) && isKnown(st)) n++; return n; }
+export function learningCount() { let n = 0; for (const st of S.cards.values()) if (wordCard(st.id) && st.st > 0 && !isKnown(st)) n++; return n; }
 
 // ---------------------------------------------------------------- aday listeleri
 function filterFn({ decks, types }) {

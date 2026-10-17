@@ -15,6 +15,7 @@ import * as db from './db.js';
 
 let lastQ = '';
 let cardIndex = null;
+const SENTENCE_DRILL = new Set(['form', 'reg', 'ceviri']);
 let IX = null, XM = null, V = '', SH = [], ixP = null;
 const shards = new Map();
 let pendingOpen = null;
@@ -124,6 +125,7 @@ function buildCardIndex() {
   cardLemmas = new Set();
   for (const c of CARDS.values()) { if (c.f) cardLemmas.add(c.f); if (c.a && c.a[0]) cardLemmas.add(c.a[0]); }
   for (const c of CARDS.values()) {
+    if (SENTENCE_DRILL.has(c.t)) continue; // cümle alıştırmaları sözlük sonucu değil
     const ru = [c.f, c.v, ...(c.a || []), ...((c.cz || []).flatMap(z => z.a))].filter(Boolean).join(' ');
     cardIndex.push({ c, ru: norm(ru), tr: (c.q + ' ' + (c.qs || '')).toLocaleLowerCase('tr') });
   }
@@ -257,7 +259,7 @@ async function emptyState(box) {
 }
 
 export function renderSozluk(root) {
-  if (!cardIndex || cardIndex.length !== CARDS.size) buildCardIndex();
+  if (!cardIndex || cardIndex._n !== CARDS.size) { buildCardIndex(); cardIndex._n = CARDS.size; }
   const input = el('input.search', { type: 'search', placeholder: t('s.ph'), autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', value: lastQ });
   const list = el('div.sect');
   const info = el('div.note');
