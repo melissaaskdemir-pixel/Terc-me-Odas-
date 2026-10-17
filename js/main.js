@@ -16,8 +16,9 @@ import { renderArsiv, backupWarn } from './arsiv.js';
 import { renderKapsam } from './kapsam.js';
 import { renderYds, isExamOpen } from './yds.js';
 import { renderOnek } from './onek.js';
+import { renderSes, isSesOpen } from './ses.js';
 
-export const APP_VERSION = '0.4.0';
+export const APP_VERSION = '0.4.1';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],
@@ -25,12 +26,13 @@ const TABS = [
   ['kapsam', 'tab.masa', renderKapsam, true],   // sekme çubuğunda görünmez
   ['yds', 'tab.calis', renderYds, true],
   ['onek', 'tab.calis', renderOnek, true],
+  ['ses', 'tab.calis', renderSes, true],
 ];
 let current = 'masa';
 const scrollPos = {};
 
 export function go(name, keepScroll) {
-  if (waitingSW && !isStudying() && !isReading() && !isExamOpen()) { waitingSW.postMessage('skipWaiting'); }
+  if (waitingSW && !isStudying() && !isReading() && !isExamOpen() && !isSesOpen()) { waitingSW.postMessage('skipWaiting'); }
   const screen = document.getElementById('screen');
   if (!isStudying()) scrollPos[current] = screen.scrollTop;
   current = name;
@@ -46,7 +48,7 @@ function renderTabs() {
   nav.innerHTML = '';
   for (const [k, lab, , hidden] of TABS) {
     if (hidden) continue;
-    const b = el('button', { 'aria-current': k === current || (k === 'masa' && current === 'kapsam') || (k === 'calis' && (current === 'yds' || current === 'onek')) ? 'page' : null, on: { click: () => go(k) } }, svg(ICON[k]), t(lab));
+    const b = el('button', { 'aria-current': k === current || (k === 'masa' && current === 'kapsam') || (k === 'calis' && (current === 'yds' || current === 'onek' || current === 'ses')) ? 'page' : null, on: { click: () => go(k) } }, svg(ICON[k]), t(lab));
     if (k === 'arsiv' && backupWarn()) b.append(el('span.dot', { 'aria-label': t('a.bkDot') }));
     nav.append(b);
   }

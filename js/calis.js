@@ -7,6 +7,7 @@ import * as plan from './plan.js';
 import { startStudy } from './study.js';
 import { go } from './main.js';
 import { openYds } from './yds.js';
+import { openSes } from './ses.js';
 import { toast } from './ui.js';
 
 const TYPES = [
@@ -76,9 +77,10 @@ export function renderCalis(root) {
       t('c.errs', { n: errIds.length })) : null,
     el('button.btn.btn-big', { on: { click: () => openYds() } }, el('span', t('c.ydsOpen')), el('span.mono.acc', t('c.ydsSub'))),
     el('button.btn.btn-big', { on: { click: () => go('onek') } }, el('span', t('c.onek')), el('span.mono.acc', t('c.onekSub', { n: DECKS.get('onek')?.cards.length || 0 }))),
+    el('button.btn.btn-big', { on: { click: () => openSes() } }, el('span', t('c.sesOpen')), el('span.mono.acc', t('c.sesSub'))),
     el('div.kicker', t('c.soon')),
     el('div.list',
-      ...[['c.gramer', 'v0.4'], ['c.yazma', 'v0.4'], ['c.ses', 'v0.4']].map(([k, v]) =>
+      ...[['c.gramer', 'v0.4'], ['c.yazma', 'v0.4']].map(([k, v]) =>
         el('div.lock', el('span', t(k)), el('span.r', v)))),
     el('div.note', t('c.soonNote')),
   );
