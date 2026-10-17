@@ -5,7 +5,7 @@ export default {
 
   // kart tipleri
   'type.kelime': 'Kelime', 'type.kalip': 'Kalıp', 'type.baglac': 'Bağlaç', 'type.terim': 'Terim', 'type.cift': 'Fiil çifti',
-  'type.yonetim': 'Yönetim', 'type.koll': 'Kollokasyon', 'type.esanlam': 'Eş anlamlı', 'type.register': 'Sade → resmî', 'type.onek': 'Önek',
+  'type.yonetim': 'Yönetim', 'type.koll': 'Kollokasyon', 'type.esanlam': 'Eş anlamlı', 'type.register': 'Sade → resmî', 'type.onek': 'Önek', 'type.form': 'Biçim', 'type.reg': 'Sade → resmî', 'type.ceviri': 'Çeviri',
 
   // çalışma ekranı
   'st.answer': 'Cevap', 'st.close': 'Oturumu kapat', 'st.combo': 'KOMBO ×{n}', 'st.yourAnswer': 'Cevabın', 'st.again': 'Geri geldi',
@@ -46,7 +46,7 @@ export default {
 
   // masa
   'm.freezes': '{n} seri dondurma', 'm.freezeN': '· {n} dondurma',
-  'kind.gunun': 'GÜNÜN SETİ', 'kind.mini': 'MİNİ SET', 'kind.tur': 'TUR', 'kind.hata': 'HATA DEFTERİ', 'kind.liste': 'SÖZLÜKTEN', 'kind.onek': 'ÖNEKLER', 'm.streakTitle': 'Seri: en az 5 kart çalışılan art arda günler',
+  'kind.gunun': 'GÜNÜN SETİ', 'kind.mini': 'MİNİ SET', 'kind.tur': 'TUR', 'kind.hata': 'HATA DEFTERİ', 'kind.liste': 'SÖZLÜKTEN', 'st.orderNote': 'Kelime sıran farklı; Rusçada sıra çoğu zaman serbesttir ama vurgu değişir. En doğal sıra: {w}', 'kind.onek': 'ÖNEKLER', 'kind.yazma': 'YAZMA', 'm.streakTitle': 'Seri: en az 5 kart çalışılan art arda günler',
   'm.streak': 'Seri {n} gün', 'm.ringLabel': 'Günlük halka {n} / {g}', 'm.known': 'Bilinen kelime',
   'm.knownDelta': '+{n} bu hafta', 'm.learning': '{n} kart öğreniliyor', 'm.openSet': 'Günün setini aç', 'm.continueSet': 'Günün setine devam',
   'm.extraSet': 'Ekstra tur', 'm.cardsLeft': '{n} kart', 'm.plus20': '+20 kart', 'm.plan': 'Bugün: {due} tekrar, {nw} yeni kart hakkı',
@@ -96,10 +96,10 @@ export default {
   // çalış
   'c.kicker': 'ÇALIŞMA DOSYALARI', 'c.title': 'Çalış', 'c.kelime': 'Kelime', 'c.open': 'AÇIK',
   'c.decks': 'Desteler', 'c.types': 'Kart tipi', 'c.tAll': 'Karışık', 'c.tKelime': 'Kelime', 'c.tCift': 'Fiil çifti', 'c.tYonetim': 'Yönetim',
-  'c.tKoll': 'Kollokasyon', 'c.tEsanlam': 'Eş anlamlı', 'c.tOnek': 'Önek', 'c.counts': '{due} tekrar bekliyor · {nw} yeni kart · bugün kalan yeni hakkı {allow}',
+  'c.tKoll': 'Kollokasyon', 'c.tEsanlam': 'Eş anlamlı', 'c.tOnek': 'Önek', 'c.tForm': 'Biçim', 'c.tCev': 'Çeviri', 'c.counts': '{due} tekrar bekliyor · {nw} yeni kart · bugün kalan yeni hakkı {allow}',
   'c.start': '{n} kartlık tur başlat', 'c.noNew': 'Bugünkü yeni kart hakkın doldu. İstersen bugüne özel artır.', 'c.extra10': '+10 yeni kart',
   'c.extraAdded': 'Bugün için 10 yeni kart eklendi.', 'c.errs': 'Son hatalarını çalış ({n} kart)', 'c.soon': 'Sıradaki bölümler',
-  'c.onek': 'Önekler', 'c.onekSub': '{n} kart', 'c.sesOpen': 'Dikte ve gölgeleme', 'c.sesSub': 'ses', 'c.gramer': 'Gramer haritası', 'c.yazma': 'Yazma: çeviri, register, form', 'c.ses': 'Ses: dikte, gölgeleme', 'c.yds': 'YDS',
+  'c.onek': 'Önekler', 'c.onekSub': '{n} kart', 'c.sesOpen': 'Dikte ve gölgeleme', 'c.sesSub': 'ses', 'c.yazmaOpen': 'Yazma', 'c.gramer': 'Gramer haritası', 'c.yazma': 'Yazma: çeviri, register, form', 'c.ses': 'Ses: dikte, gölgeleme', 'c.yds': 'YDS',
   'c.soonNote': 'Her bölüm açıldığında tek başına ya da karışık çalışılabilecek.',
 
     'on.kicker': 'FİİL ÖNEKLERİ', 'on.title': 'Önekler', 'on.intro': 'Her öneğin temel anlamı, ondan çıkan soyut anlamlar ve sınavda karışanlar. Kartlarda Türkçe anlamı ve kök ailesini görürsün, önekli fiili cümleye uygun biçimde yazarsın.',
@@ -123,6 +123,11 @@ export default {
   'sx.done': 'Oturum tamam', 'sx.doneDikte': '{n} cümle yazdın; {full} tanesi kusursuz.', 'sx.doneGolge': '{n} cümle gölgeledin; {r} tanesinde kendini kaydettin.',
   'sx.again': '10 cümle daha', 'sx.back': 'Ses odasına dön', 'sx.imlaK': 'İMLA DEFTERİ', 'sx.imlaT': 'Yanlış yazdıkların', 'sx.imlaNote': 'Diktede yanlış yazdığın kelimeler, doğru biçimleriyle. Dokununca sözlükte açılır.',
   'sx.youTyped': 'sen: {w}', 'sx.imlaClear': 'Defteri temizle',
+  'yz.kicker': 'YAZMA MASASI', 'yz.title': 'Yazma', 'yz.intro': 'Burada sözcüğü tanımak yetmez, doğru biçimi kendin üretirsin: son ekler, sayı + isim, uyum, fiilin istediği hâl. Son ek hataları ayrı işaretlenir.',
+  'yz.due': '{d} kart tekrar bekliyor', 'yz.tur': 'Karışık 20 kartlık tur', 'yz.catN': '{k}/{n}',
+  'yz.form': 'Biçim', 'yz.formNote': 'Cümledeki boşluğa parantezdeki sözcüğün doğru biçimini yaz.',
+  'yz.reg': 'Sade → resmî', 'yz.regNote': 'Parantezdeki gündelik ifadenin resmî, yazılı dildeki karşılığını cümleye uygun biçimde yaz.',
+  'yz.cev': 'Çeviri', 'yz.cevNote': 'Türkçe cümleyi Rusçaya çevir. Kelime sırası serbest. Doğru ama listede olmayan bir çeviri yazarsan "Bence doğruydu" de; uygulama onu hatırlar.',
   'c.ydsOpen': 'YDS denemeleri', 'c.ydsSub': '80 soru',
 
   // yds

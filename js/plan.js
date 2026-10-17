@@ -195,8 +195,8 @@ function pickBase(sess) {
 }
 
 // ---------------------------------------------------------------- cevap işleme
-const LISTED = new Set(['hata', 'liste', 'onek']);   // sabit kart listesiyle oturumlar
-const STRICT_FORM = new Set(['yonetim', 'koll', 'esanlam', 'onek']);
+const LISTED = new Set(['hata', 'liste', 'onek', 'yazma']);   // sabit kart listesiyle oturumlar
+const STRICT_FORM = new Set(['yonetim', 'koll', 'esanlam', 'onek', 'form', 'reg']);
 
 export function ratingFor(card, o) {
   if (o.res === 'known') return 4;

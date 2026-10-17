@@ -12,7 +12,7 @@ import { okumaToday, okumaLabel } from './okuma.js';
 
 const TYPE_LABEL = {
   kelime: 'type.kelime', kalip: 'type.kalip', baglac: 'type.baglac', terim: 'type.terim', cift: 'type.cift',
-  yonetim: 'type.yonetim', koll: 'type.koll', esanlam: 'type.esanlam', register: 'type.register', onek: 'type.onek',
+  yonetim: 'type.yonetim', koll: 'type.koll', esanlam: 'type.esanlam', register: 'type.register', onek: 'type.onek', form: 'type.form', reg: 'type.reg', ceviri: 'type.ceviri',
 };
 
 let cur = null; // etkin oturum
@@ -165,6 +165,8 @@ function promptNodes() {
       break;
     case 'koll':
     case 'onek':
+    case 'form':
+    case 'reg':
     case 'esanlam':
       out.push(el('div.q' + (long ? '.long' : ''), c.q), clozeNode(ex.cloze, cur.fill, cur.fillCls), asking ? el('div.hint', h) : null);
       break;
@@ -229,7 +231,7 @@ function submit() {
 
 function checkOpts() {
   const c = cur.card;
-  return { partner: c.pa, user: S.prof.alts?.[c.id], wrongAspect: c.t === 'cift' ? [c.v] : null };
+  return { partner: c.pa, user: S.prof.alts?.[c.id], wrongAspect: c.t === 'cift' ? [c.v] : null, freeOrder: c.t === 'ceviri' };
 }
 
 function shake() {
@@ -419,6 +421,7 @@ function feedback({ verdict, compact, r }) {
   audioBtn(ex.audio));
   fb.append(ansRow);
   if (r && r.partner && r.main) fb.append(el('div.meta', t('st.partnerNote', { w: r.main })));
+  if (r && r.order) fb.append(el('div.meta', t('st.orderNote', { w: r.alt })));
   if (r && r.msg && verdict !== 'ok') fb.append(el('div.meta', r.msg));
   if (ex.cloze && ex.cloze.tr) fb.append(el('div.meta', ex.cloze.tr));
 

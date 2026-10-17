@@ -11,7 +11,7 @@ import { openSes } from './ses.js';
 import { toast } from './ui.js';
 
 const TYPES = [
-  ['all', 'c.tAll'], ['kelime', 'c.tKelime'], ['cift', 'c.tCift'], ['yonetim', 'c.tYonetim'], ['koll', 'c.tKoll'], ['esanlam', 'c.tEsanlam'], ['onek', 'c.tOnek'],
+  ['all', 'c.tAll'], ['kelime', 'c.tKelime'], ['cift', 'c.tCift'], ['yonetim', 'c.tYonetim'], ['koll', 'c.tKoll'], ['esanlam', 'c.tEsanlam'], ['onek', 'c.tOnek'], ['form', 'c.tForm'], ['ceviri', 'c.tCev'],
 ];
 const ui = { decks: null, type: 'all' };
 
@@ -78,9 +78,10 @@ export function renderCalis(root) {
     el('button.btn.btn-big', { on: { click: () => openYds() } }, el('span', t('c.ydsOpen')), el('span.mono.acc', t('c.ydsSub'))),
     el('button.btn.btn-big', { on: { click: () => go('onek') } }, el('span', t('c.onek')), el('span.mono.acc', t('c.onekSub', { n: DECKS.get('onek')?.cards.length || 0 }))),
     el('button.btn.btn-big', { on: { click: () => openSes() } }, el('span', t('c.sesOpen')), el('span.mono.acc', t('c.sesSub'))),
+    el('button.btn.btn-big', { on: { click: () => go('yazma') } }, el('span', t('c.yazmaOpen')), el('span.mono.acc', t('c.onekSub', { n: DECKS.get('yazma')?.cards.length || 0 }))),
     el('div.kicker', t('c.soon')),
     el('div.list',
-      ...[['c.gramer', 'v0.4'], ['c.yazma', 'v0.4']].map(([k, v]) =>
+      ...[['c.gramer', 'v0.4']].map(([k, v]) =>
         el('div.lock', el('span', t(k)), el('span.r', v)))),
     el('div.note', t('c.soonNote')),
   );

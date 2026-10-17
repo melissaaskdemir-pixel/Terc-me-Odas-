@@ -7,6 +7,7 @@ export const CARDS = new Map();   // kart kimliği → kart
 export let SERIES = {};
 export let CONTENT_VERSION = '';
 export let ONEK = null;   // önek anlatımı + aileler (data/onek.json)
+export let YAZMA = null;  // yazma kartları ve kategorileri (data/yazma.json)
 
 async function fetchJSON(url) {
   const r = await fetch(url);
@@ -26,6 +27,7 @@ export async function loadDecks() {
   SERIES = k.series || {};
   addDeck(k);
   try { ONEK = await fetchJSON('data/onek.json'); addDeck(ONEK.deck); } catch (e) { ONEK = null; }
+  try { YAZMA = await fetchJSON('data/yazma.json'); addDeck(YAZMA.deck); } catch (e) { YAZMA = null; }
   for (const p of await db.all('packs')) for (const d of p.decks || []) addDeck(d, p.id);
 }
 
@@ -38,7 +40,7 @@ export function loadMorph() {
 // ---------------------------------------------------------------- kart yardımcıları
 export const TYPE_GROUP = {
   kelime: 'kelime', kalip: 'kelime', baglac: 'kelime', terim: 'kelime',
-  cift: 'cift', yonetim: 'yonetim', koll: 'koll', register: 'koll', esanlam: 'esanlam', onek: 'onek',
+  cift: 'cift', yonetim: 'yonetim', koll: 'koll', register: 'koll', esanlam: 'esanlam', onek: 'onek', form: 'form', reg: 'koll', ceviri: 'ceviri',
 };
 
 // Kartın bu gösterimdeki beklenen cevabı

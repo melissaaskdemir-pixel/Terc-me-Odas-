@@ -166,6 +166,12 @@ export function check(typed, accepted, opts = {}) {
   for (const a of alts) if (a.n === nt) return { res: 'ok', alt: a.disp };
   for (const p of opts.partner || []) if (norm(p) === nt) return { res: 'ok', partner: true, alt: p, main: alts[0]?.disp };
   for (const u of opts.user || []) if (norm(u) === nt) return { res: 'ok', user: true, alt: u };
+  if (opts.freeOrder) {
+    // çeviride kelime sırası serbest: aynı kelimeler farklı sırada da doğru
+    const key = s => s.split(' ').sort().join(' ');
+    const kt = key(nt);
+    for (const a of alts) if (key(a.n) === kt) return { res: 'ok', alt: a.disp, order: true };
+  }
   for (const w of opts.wrongAspect || []) if (norm(w) === nt) {
     const g = { res: 'yapi', why: 'aspect', ops: [{ t: nt, e: alts[0]?.n, c: 'yapi', why: 'aspect' }], alt: alts[0]?.disp };
     g.msg = explain(g);

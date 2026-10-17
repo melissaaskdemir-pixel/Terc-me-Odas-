@@ -17,8 +17,9 @@ import { renderKapsam } from './kapsam.js';
 import { renderYds, isExamOpen } from './yds.js';
 import { renderOnek } from './onek.js';
 import { renderSes, isSesOpen } from './ses.js';
+import { renderYazma } from './yazma.js';
 
-export const APP_VERSION = '0.4.1';
+export const APP_VERSION = '0.4.2';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],
@@ -27,6 +28,7 @@ const TABS = [
   ['yds', 'tab.calis', renderYds, true],
   ['onek', 'tab.calis', renderOnek, true],
   ['ses', 'tab.calis', renderSes, true],
+  ['yazma', 'tab.calis', renderYazma, true],
 ];
 let current = 'masa';
 const scrollPos = {};
@@ -48,7 +50,7 @@ function renderTabs() {
   nav.innerHTML = '';
   for (const [k, lab, , hidden] of TABS) {
     if (hidden) continue;
-    const b = el('button', { 'aria-current': k === current || (k === 'masa' && current === 'kapsam') || (k === 'calis' && (current === 'yds' || current === 'onek' || current === 'ses')) ? 'page' : null, on: { click: () => go(k) } }, svg(ICON[k]), t(lab));
+    const b = el('button', { 'aria-current': k === current || (k === 'masa' && current === 'kapsam') || (k === 'calis' && (current === 'yds' || current === 'onek' || current === 'ses' || current === 'yazma')) ? 'page' : null, on: { click: () => go(k) } }, svg(ICON[k]), t(lab));
     if (k === 'arsiv' && backupWarn()) b.append(el('span.dot', { 'aria-label': t('a.bkDot') }));
     nav.append(b);
   }
