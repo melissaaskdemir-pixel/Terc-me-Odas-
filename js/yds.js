@@ -168,16 +168,8 @@ function casualBox() {
     el('div.topline', el('h2.h2', t('y.casual')), el('span.kicker', t('y.casToday', { n: day.n, ok: day.ok }))),
     el('div.note', t('y.casualNote')),
     el('div.kicker', t('y.casSecs')), chips,
-    el('div.setrow', el('div.lbl', el('span', t('y.casGen')), el('small', t('y.casGenSub'))),
-      switchBtn(!!R.casGen, v => { R.casGen = v; save(); count.textContent = t('y.poolN', { n: casualPool().pool.length }); })),
     el('div.note', count),
     el('button.btn.btn-primary.btn-wide', { on: { click: () => startCasual() } }, t('y.casStart')));
-}
-
-function switchBtn(on, onChange) {
-  const b = el('button.switch', { role: 'switch', 'aria-checked': String(on) });
-  b.addEventListener('click', () => { const v = b.getAttribute('aria-checked') !== 'true'; b.setAttribute('aria-checked', String(v)); onChange(v); });
-  return b;
 }
 
 function renderHome(wrap) {
@@ -570,7 +562,7 @@ function renderReview(root, wrap) {
       q.t ? el('div.yds-stem' + (q.s === 'diyalog' ? '.dlg' : '') + (/[а-яё]/i.test(q.t) ? '.ru' : ''), stemNode(q, run)) : null,
       el('div.yds-opts.ro', ...q.o.map((_, j) => optionNode(q, j, run, { state: j === q.a ? 'ok' : j === mine ? 'bad' : 'none' }))),
       el('div.meta', mine == null ? t('y.blank') : mine === q.a ? t('y.right') : t('y.wrongWas', { a: LETTERS[mine], b: LETTERS[q.a] })),
-      q.x ? el('div.yds-x', q.x) : (it.q.id.includes(':') && !it.q.x ? el('div.meta.small', t('y.noExpl')) : null)),
+      q.x ? el('div.yds-x', q.x) : el('div.meta.small', t(isOsym(q) ? 'y.noExplPack' : 'y.noExpl'))),
     el('div.grid2',
       el('button.btn', { disabled: k === 0, on: { click: () => { ui.review.i = k - 1; go('yds', false); } } }, t('y.prev')),
       k < idx.length - 1 ? el('button.btn.btn-primary', { on: { click: () => { ui.review.i = k + 1; go('yds', false); } } }, t('y.next'))
@@ -579,15 +571,15 @@ function renderReview(root, wrap) {
 }
 
 // ---------------------------------------------------------------- serbest çözüm (süresiz, anında geri bildirim)
-// Havuz: ÖSYM kitapçıkları (çapa sınavları hariç), 2026 örneği; istenirse üretilmiş denemeler. Görülmeyenler önce.
+// Havuz: ÖSYM kitapçıkları (çapa sınavları hariç), 2026 örneği ve alıştırma bankası. Deneme soruları hiç girmez.
 function casualPool() {
-  const pool = [], P = {};
+  const pool = [], P = {}, ids = new Set();
   const secs = R.casSecs && R.casSecs.length ? new Set(R.casSecs) : null;
-  const ok = s => !secs || secs.has(s === 'cloze' ? 'bosluk' : s);
-  for (const e of OSYM?.exams || []) if (!e.anchor) { for (const p of e.p) P[p.id] = p; for (const q of e.q) if (ok(q.s)) pool.push(q); }
-  for (const q of OSYM?.ornek || []) if (ok(q.s)) pool.push(q);
-  const doneGen = new Set(R.runs.filter(r => r.done && r.exam.startsWith('g:')).map(r => r.exam.slice(2)));
-  for (const d of GEN?.denemeler || []) if (R.casGen || doneGen.has(d.id)) { for (const p of d.p) P[p.id] = p; for (const q of d.q) if (ok(q.s)) pool.push(q); }
+  const add = q => { if ((!secs || secs.has(q.s === 'cloze' ? 'bosluk' : q.s)) && !ids.has(q.id)) { ids.add(q.id); pool.push(q); } };
+  for (const e of OSYM?.exams || []) if (!e.anchor) { for (const p of e.p) P[p.id] = p; e.q.forEach(add); }
+  (OSYM?.ornek || []).forEach(add);
+  for (const p of GEN?.banka?.p || []) P[p.id] = p;
+  (GEN?.banka?.q || []).forEach(add);
   return { pool, P };
 }
 
@@ -648,7 +640,7 @@ function renderCasual(root, wrap) {
     el('div.st-top',
       el('button.iconbtn', { 'aria-label': t('k.quit'), on: { click: () => { document.body.classList.remove('studying'); ui.cas = null; setTool(null); nav('home'); } } }, svg(ICON.x)),
       el('div.yds-head', el('span.mono', t('y.casualTitle')), el('span.kicker', `${t('ys.' + (q.s === 'cloze' ? 'cloze' : q.s))} · ${srcLabel(q.id)}`)),
-      el('span.mono.yds-timer', t('y.casToday', { n: day.n, ok: day.ok }))),
+      el('span.mono.yds-timer', { title: t('y.casToday', { n: day.n, ok: day.ok }) }, t('y.casTodayShort', { n: day.n, ok: day.ok }))),
     el('div.yds-body',
       q.p && c.P[q.p] ? passageNode(c.P[q.p], q, ctx) : null,
       el('div.paper.yds-q',
@@ -658,7 +650,7 @@ function renderCasual(root, wrap) {
           : { onPick: pick }))),
         answered ? el('div.meta', c.ans === -1 ? t('y.shown', { b: LETTERS[q.a] }) : c.ans === q.a ? t('y.right') : t('y.wrongWas', { a: LETTERS[c.ans], b: LETTERS[q.a] })) : null,
         answered && q.x ? el('div.yds-x', q.x) : null,
-        answered && !q.x && !q.id.startsWith('d') ? el('div.meta.small', t('y.noExpl')) : null)),
+        answered && !q.x ? el('div.meta.small', t(isOsym(q) ? 'y.noExplPack' : 'y.noExpl')) : null)),
     toolsBar(() => { clearMarks(ctx, q, c.P); rerender(); }),
     el('div.yds-nav.two',
       answered ? el('span') : el('button.btn', { on: { click: reveal } }, t('y.reveal')),
@@ -675,8 +667,10 @@ function renderCasual(root, wrap) {
   if (ui._showFb) { ui._showFb = false; const fb = frame.querySelector('.yds-q .meta'); fb && requestAnimationFrame(() => fb.scrollIntoView({ block: 'center', behavior: 'smooth' })); }
 }
 
+const isOsym = q => /^20\d\d-/.test(q.id);
 const srcLabel = id => {
   const [a] = id.split(':');
+  if (a === 'b') return t('y.bankTag');
   if (a.startsWith('d')) return t('y.genTag');
   if (a === '2026-ornek') return 'ÖSYM 2026 örnek';
   return 'ÖSYM ' + a.replace('-1', ' İlkbahar').replace('-2', ' Sonbahar').replace('2019 İlkbahar', '2019');
