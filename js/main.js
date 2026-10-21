@@ -21,7 +21,7 @@ import { renderSes, isSesOpen } from './ses.js';
 import { renderYazma } from './yazma.js';
 import { renderGramer } from './gramer.js';
 
-export const APP_VERSION = '0.4.6';
+export const APP_VERSION = '0.4.7';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],

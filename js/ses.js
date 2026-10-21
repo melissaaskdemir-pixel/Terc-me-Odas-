@@ -168,7 +168,7 @@ function nextItem() {
   const r = ui.run;
   audio.stop();
   r.i++;
-  r.done = false; r.typed = ''; r.last = null;
+  r.done = false; r.typed = ''; r.last = null; r.undo = null;
   if (r.i >= r.items.length) { document.body.classList.remove('studying'); ui.view = 'sonuc'; go('ses'); return; }
   const it = r.items[r.i];
   if (audio.isPrepared(it.k)) audio.playNow(it.k); else audio.play(it.k);
@@ -230,8 +230,24 @@ function renderDikte(body, r, it) {
     res.counts.imla + res.counts.sonek + res.counts.yapi ? el('div.meta', t('sx.errs', res.counts)) : null,
     credit(it, true)));
   put(body, card, el('div.sx-nav',
-    el('span'),
+    r.undo ? el('button.btn', { 'aria-label': t('st.typoAria'), on: { click: typoUndo } }, t('st.typo')) : el('span'),
     el('button.btn.btn-primary', { on: { click: nextItem } }, r.i + 1 < r.items.length ? t('sx.next') : t('sx.finish'))));
+}
+
+// Typo: el kaydı. Bu cümlenin kaydını geri al, yazdığını kutuya geri koy.
+async function typoUndo() {
+  const r = ui.run;
+  if (!r || !r.done || !r.undo) return;
+  const u = r.undo, d = dayRec();
+  Object.assign(d, u.day);
+  d.typo = (d.typo || 0) + 1;
+  R.imla = u.imla;
+  if (u.seen) R.seen[u.k] = u.seen; else delete R.seen[u.k];
+  r.res.pop();
+  r.typed = r.last ? r.last.typed : r.typed;
+  r.done = false; r.last = null; r.undo = null; r.fresh = false;
+  await save();
+  go('ses');
 }
 
 function typedView(res) {
@@ -256,6 +272,9 @@ async function submitDikte(typed) {
   audio.stop();
   let res;
   const E = tokens(it.ru).length;
+  // typo ile geri alabilmek için kayıttan önceki durum
+  const d0 = dayRec();
+  const undo = typed != null ? { k: it.k, seen: R.seen[it.k] || 0, imla: R.imla.slice(), day: { dk: d0.dk, words: d0.words, ok: d0.ok, imla: d0.imla, sonek: d0.sonek, yapi: d0.yapi } } : null;
   if (typed == null) res = { score: 0, ops: [], typed: '', counts: { imla: 0, sonek: 0, yapi: E } };
   else {
     const g = check(typed, [it.ru]);
@@ -280,6 +299,7 @@ async function submitDikte(typed) {
   R.seen[it.k] = (R.seen[it.k] || 0) + 1;
   r.res.push({ k: it.k, score: res.score });
   r.last = res; r.done = true;
+  r.undo = res.score < 1 ? undo : null;
   await save();
   audio.sfx(res.score === 1 ? 'stamp' : 'soft');
   if (typed != null) haptic(res.score === 1 ? 'ok' : res.score >= 0.7 ? 'tick' : 'bad');

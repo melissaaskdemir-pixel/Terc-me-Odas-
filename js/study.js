@@ -1,7 +1,7 @@
 // Çalışma ekranı: yazarak cevap, Bilmiyorum akışı, hata sınıflandırma, mühürler
 import { el, svg, ICON, dayNum } from './util.js';
 import { t } from './i18n.js';
-import { S, set, saveProf, dayRec } from './store.js';
+import { S, set, saveProf, dayRec, commit } from './store.js';
 import { CARDS, SERIES, expected, loadMorph } from './decks.js';
 import { check, norm, tokens, charMarks, hintText, tagsLabel, morphReady } from './check.js';
 import * as plan from './plan.js';
@@ -92,7 +92,14 @@ function setLabel(text) {
 
 function setActions(...btns) {
   cur.f.act.innerHTML = '';
-  cur.f.act.append(...btns);
+  cur.f.act.append(...btns.filter(Boolean));
+}
+
+function askActions() {
+  setActions(
+    el('button.btn', { on: { click: dontKnow } }, t('st.dontKnow')),
+    el('button.btn.hint', { 'aria-label': t('st.hintAria'), on: { click: giveHint } }, t('st.hint')),
+    el('button.btn.btn-primary.send', { 'data-fx': 'own', on: { click: submit } }, t('st.send')));
 }
 
 // ---------------------------------------------------------------- kart akışı
@@ -124,10 +131,7 @@ function next() {
   setLabel(t('st.yourAnswer'));
   f.labelR.textContent = '';
   f.hint.textContent = '';
-  setActions(
-    el('button.btn', { on: { click: dontKnow } }, t('st.dontKnow')),
-    el('button.btn.hint', { 'aria-label': t('st.hintAria'), on: { click: giveHint } }, t('st.hint')),
-    el('button.btn.btn-primary.send', { 'data-fx': 'own', on: { click: submit } }, t('st.send')));
+  askActions();
   focusInput();
   updateTop();
   audio.sfx('paper');
@@ -305,8 +309,34 @@ function onWrong(r) {
   haptic(r.res === 'imla' ? 'tick' : 'bad');
   setActions(
     el('button.btn', { on: { click: claimRight } }, t('st.claim')),
+    el('button.btn.hint.typo', { 'aria-label': t('st.typoAria'), on: { click: typoUndo } }, t('st.typo')),
     el('button.btn.btn-primary.send', { 'data-fx': 'own', on: { click: submit } }, t('st.send')));
   focusInput();
+}
+
+// Typo: el kaydı. Yanlış hükmü geri al, yazdığını düzeltmek için kutuya geri koy. Kayda hiçbir şey geçmez
+// (yanlış cevap ancak doğrusu yazılınca kaydediliyordu); düzeltilmiş cevap ilk deneme sayılır.
+function typoUndo() {
+  if (!cur || cur.state !== 'wrong') return;
+  const f = cur.f;
+  audio.stop();
+  cur.state = 'ask';
+  cur.res = null;
+  cur.fill = null;
+  cur.fillCls = '';
+  cur.retypeFails = 0;
+  f.input.className = '';
+  f.input.value = cur.typed || '';
+  f.hint.textContent = cur.hint ? hintText(cur.ex.show, cur.hint) : '';
+  setLabel(t('st.yourAnswer'));
+  f.labelR.textContent = t('st.typoNote');
+  renderCard(null, null);
+  askActions();
+  focusInput();
+  try { const n = f.input.value.length; f.input.setSelectionRange(n, n); } catch (e) {}
+  const day = dayRec(cur.sess.today);
+  day.typo = (day.typo || 0) + 1;
+  commit({ day }).catch(() => {});
 }
 
 function dontKnow() {

@@ -378,7 +378,7 @@ export async function weekSummary(ws) {
   for (let d = ws; d < ws + 7; d++) days.push(S.days.get(d) || { day: d, n: 0, ok: 0, nw: 0, pts: 0, err: {} });
   const first = logs.filter(l => !l.again);
   const sum = { n: logs.length, first: first.length, ok: first.filter(l => l.r === 'ok').length, nw: days.reduce((a, d) => a + (d.nw || 0), 0),
-    pts: days.reduce((a, d) => a + (d.pts || 0), 0), goalDays: days.filter(d => d.goalHit).length, active: days.filter(d => d.n >= MINI).length,
+    pts: days.reduce((a, d) => a + (d.pts || 0), 0), typo: days.reduce((a, d) => a + (d.typo || 0), 0), goalDays: days.filter(d => d.goalHit).length, active: days.filter(d => d.n >= MINI).length,
     err: { imla: 0, sonek: 0, yapi: 0, bil: 0 }, byType: {}, hard: {}, forms: {} };
   for (const l of logs) {
     if (sum.err[l.r] != null) sum.err[l.r]++;

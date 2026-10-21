@@ -140,7 +140,7 @@ export async function buildReport() {
   L.push('');
   L.push(`Cevap: ${s.n} · ilk denemede doğru: %${pct(s.ok, s.first)} · yeni kart: ${s.nw} · puan: ${s.pts}`);
   L.push(`Aktif gün: ${s.active}/7 · halka tamam: ${s.goalDays}/7 · seri: ${plan.streak().n} gün · bilinen: ${plan.knownCount()}`);
-  L.push(`Hatalar: yapı ${s.err.yapi} · son ek ${s.err.sonek} · imla ${s.err.imla} · bilmiyorum ${s.err.bil}`);
+  L.push(`Hatalar: yapı ${s.err.yapi} · son ek ${s.err.sonek} · imla ${s.err.imla} · bilmiyorum ${s.err.bil} · typo ile geri alınan: ${s.typo}`);
   L.push('');
   L.push('Kart tipine göre (ilk deneme):');
   for (const [k, v] of Object.entries(s.byType)) L.push(`- ${t('type.' + k)}: %${pct(v.ok, v.n)} (${v.n})`);
