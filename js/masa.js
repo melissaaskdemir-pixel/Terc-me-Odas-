@@ -1,4 +1,5 @@
 // Masa: günün seti, halka, seri, bilinen kelime, ısı haritası, iddia, haftalık brifing
+import { weekStatus } from './calisilan.js';
 import { el, dayNum, fmtDay, weekStart, monthShort, dayOfMonth, fmtNum, pct } from './util.js';
 import { t } from './i18n.js';
 import { S, set, dayRec, saveProf } from './store.js';
@@ -55,6 +56,7 @@ export function renderMasa(root) {
 
     el('div.list',
       el('button', { on: { click: () => go('calis') } }, el('span', t('m.lKelime')), el('span.r', t('m.lDue', { n: due }))),
+      calisilanRow(),
       el('button', { on: { click: () => go('okuma') } }, el('span', t('m.lOkuma')), okStatus()),
       el('button', { on: { click: () => go('arsiv') } }, el('span', t('m.lHata')), el('span.r', t('m.lHataN', { n: recentErrCount(today) })))),
 
@@ -193,4 +195,11 @@ export async function showBriefing(ws) {
     best && best.n ? el('p', el('span.no', '4.'), t('b.best', { d: fmtDay(best.day, { weekday: true }), n: best.n })) : null,
     el('p', el('span.no', '5.'), weakest && weakest[1] ? t('b.focus.' + weakest[0]) : t('b.focus.none')),
     el('button.btn.btn-primary', { on: { click: close } }, t('b.close'))));
+}
+
+function calisilanRow() {
+  const w = weekStatus();
+  if (!w.n) return null;
+  return el('button', { on: { click: () => go('calisilan') } }, el('span', t('cl.title')),
+    el('span.r', w.left ? t('cl.leftShort', { n: w.left }) : t('cl.doneShort')));
 }

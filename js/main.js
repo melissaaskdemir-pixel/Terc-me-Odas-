@@ -20,8 +20,9 @@ import { renderOnek } from './onek.js';
 import { renderSes, isSesOpen } from './ses.js';
 import { renderYazma } from './yazma.js';
 import { renderGramer } from './gramer.js';
+import { renderCalisilan } from './calisilan.js';
 
-export const APP_VERSION = '0.4.7';
+export const APP_VERSION = '0.4.8';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],
@@ -32,6 +33,7 @@ const TABS = [
   ['ses', 'tab.calis', renderSes, true],
   ['yazma', 'tab.calis', renderYazma, true],
   ['gramer', 'tab.calis', renderGramer, true],
+  ['calisilan', 'tab.calis', renderCalisilan, true],
 ];
 let current = 'masa';
 const scrollPos = {};

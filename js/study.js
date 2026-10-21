@@ -586,7 +586,8 @@ function endScreen() {
   const bar = el('div.errbar');
   if (errs) for (const k of ['yapi', 'sonek', 'imla']) if (s[k]) bar.append(el('i', { style: { width: (100 * s[k] / errs) + '%', background: `var(--${k})` } }));
   const evs = cur.events.map(e => e.k === 'goal' ? t('end.goal') : e.k === 'milestone' ? t('end.milestone', { n: e.n }) : t('end.freeze'));
-  const canMore = sess.kind === 'gunun' || sess.kind === 'tur' || sess.kind === 'mini';
+  const refillN = sess.kind === 'hafta' && typeof sess.opts.refill === 'function' ? sess.opts.refill().length : 0;
+  const canMore = sess.kind === 'gunun' || sess.kind === 'tur' || sess.kind === 'mini' || refillN > 0;
   const wrap = el('div.study', el('div.endsum',
     el('div.kicker', t('end.kicker')),
     el('h1.h1', t('end.title')),
@@ -602,7 +603,7 @@ function endScreen() {
     ...evs.map(x => el('div.panel', x)),
     readOffer(),
     el('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' } },
-      canMore ? el('button.btn.btn-primary.btn-wide', { on: { click: more } }, t('end.more')) : null,
+      canMore ? el('button.btn.btn-primary.btn-wide', { on: { click: more } }, refillN ? t('cl.morePage', { n: refillN }) : t('end.more')) : null,
       el('button.btn.btn-wide', { on: { click: exit } }, t('end.enough'))),
   ));
   screen.append(wrap);
@@ -627,6 +628,7 @@ function more() {
   const { sess } = cur;
   cur.state = 'ask';
   if (sess.kind === 'gunun') sess.extra = (sess.extra || 0) + 20;
+  else if (sess.kind === 'hafta') { const ids = sess.opts.refill ? sess.opts.refill() : []; sess.list.push(...ids); sess.base += ids.length; }
   else sess.base += sess.kind === 'mini' ? plan.MINI : 20;
   sess._exhausted = false;
   buildFrame();

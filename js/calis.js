@@ -9,6 +9,7 @@ import { go } from './main.js';
 import { openYds } from './yds.js';
 import { openSes } from './ses.js';
 import { toast } from './ui.js';
+import { weekStatus } from './calisilan.js';
 
 const TYPES = [
   ['all', 'c.tAll'], ['kelime', 'c.tKelime'], ['cift', 'c.tCift'], ['yonetim', 'c.tYonetim'], ['koll', 'c.tKoll'], ['esanlam', 'c.tEsanlam'], ['onek', 'c.tOnek'], ['form', 'c.tForm'], ['ceviri', 'c.tCev'],
@@ -75,6 +76,7 @@ export function renderCalis(root) {
       counts, startBtn, extraBox),
     errIds.length ? el('button.btn.btn-wide', { on: { click: () => startStudy('hata', { ids: errIds }, () => go('calis')) } },
       t('c.errs', { n: errIds.length })) : null,
+    calisilanBtn(),
     el('button.btn.btn-big', { on: { click: () => openYds() } }, el('span', t('c.ydsOpen')), el('span.mono.acc', t('c.ydsSub'))),
     el('button.btn.btn-big', { on: { click: () => go('onek') } }, el('span', t('c.onek')), el('span.mono.acc', t('c.onekSub', { n: DECKS.get('onek')?.cards.length || 0 }))),
     el('button.btn.btn-big', { on: { click: () => openSes() } }, el('span', t('c.sesOpen')), el('span.mono.acc', t('c.sesSub'))),
@@ -82,6 +84,13 @@ export function renderCalis(root) {
     el('button.btn.btn-big', { on: { click: () => go('gramer') } }, el('span', t('c.gramerOpen')), el('span.mono.acc', t('c.gramerSub'))),
   );
   root.append(wrap);
+}
+
+function calisilanBtn() {
+  const w = weekStatus();
+  if (!w.n) return null;
+  return el('button.btn.btn-big', { on: { click: () => go('calisilan') } }, el('span', t('cl.title')),
+    el('span.mono.acc', w.left ? t('cl.leftShort', { n: w.left }) : t('cl.doneShort')));
 }
 
 export function recentErrorIds(days = 14) {

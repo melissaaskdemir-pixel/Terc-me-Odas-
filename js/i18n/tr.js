@@ -46,7 +46,13 @@ export default {
 
   // masa
   'm.freezes': '{n} seri dondurma', 'm.freezeN': '· {n} dondurma',
-  'kind.gunun': 'GÜNÜN SETİ', 'kind.mini': 'MİNİ SET', 'kind.tur': 'TUR', 'kind.hata': 'HATA DEFTERİ', 'kind.liste': 'SÖZLÜKTEN', 'st.orderNote': 'Kelime sıran farklı; Rusçada sıra çoğu zaman serbesttir ama vurgu değişir. En doğal sıra: {w}', 'kind.onek': 'ÖNEKLER', 'kind.yazma': 'YAZMA', 'm.streakTitle': 'Seri: en az 5 kart çalışılan art arda günler',
+  'kind.gunun': 'GÜNÜN SETİ', 'kind.mini': 'MİNİ SET', 'kind.tur': 'TUR', 'kind.hata': 'HATA DEFTERİ', 'kind.liste': 'SÖZLÜKTEN', 'st.orderNote': 'Kelime sıran farklı; Rusçada sıra çoğu zaman serbesttir ama vurgu değişir. En doğal sıra: {w}', 'kind.onek': 'ÖNEKLER', 'kind.yazma': 'YAZMA', 'kind.hafta': 'HAFTALIK TUR',
+  'cl.kicker': 'HAFTALIK TUR', 'cl.title': 'Çalıştıkların', 'cl.empty': 'Henüz çalıştığın kart yok. Günün setinden ya da bir turdan sonra burada birikir.',
+  'cl.intro': 'Şimdiye kadar karşına çıkan bütün kartlar. Haftalık turda bu hafta henüz görmediklerin gelir; en çok zorlandıkların ve unutmaya en yakın olanlar önce. Günün setinde bu hafta gördüğün kart da görülmüş sayılır.',
+  'cl.stat': '{n} kart · bu hafta {seen} görüldü · {left} kaldı', 'cl.start': 'Haftalık tur: {n} kart', 'cl.done': 'Bu haftanın turu tamam. Pazartesi yeniden başlar.',
+  'cl.weakest': 'En zayıf {n} kartı yine çalış', 'cl.hard': 'Zorlandıkların', 'cl.gStat': '{n} kart · bu hafta {seen}', 'cl.thisWeek': 'bu hafta',
+  'cl.errN': '{n} hata', 'cl.morePage': '{n} kart daha', 'cl.weekNote': 'Hafta pazartesi başlar. Karta dokununca ayrıntısı açılır.',
+  'cl.leftShort': 'bu hafta {n} kaldı', 'cl.doneShort': 'bu hafta tamam', 'm.streakTitle': 'Seri: en az 5 kart çalışılan art arda günler',
   'm.streak': 'Seri {n} gün', 'm.ringLabel': 'Günlük halka {n} / {g}', 'm.known': 'Bilinen kelime',
   'm.knownDelta': '+{n} bu hafta', 'm.learning': '{n} kart öğreniliyor', 'm.openSet': 'Günün setini aç', 'm.continueSet': 'Günün setine devam',
   'm.extraSet': 'Ekstra tur', 'm.cardsLeft': '{n} kart', 'm.plus20': '+20 kart', 'm.plan': 'Bugün: {due} tekrar, {nw} yeni kart hakkı',

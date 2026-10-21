@@ -611,3 +611,11 @@ body.tool-on .mk { touch-action: pan-y; -webkit-user-select: none; user-select: 
 .gm-st .btn.on { background: var(--p-ink); color: var(--paper); border-color: var(--p-ink); }
 .gm-all { font-size: 13px; }
 .gm-open, .on-famopen { align-items: stretch !important; }
+
+/* Çalıştıkların */
+.cl-group .cl-t { font-family: 'PT Serif', serif; font-size: 18px; }
+.cl-group .slot { font-family: 'PT Mono', monospace; font-size: 11.5px; color: var(--muted); }
+.cl-open { display: flex; flex-direction: column; gap: 10px; padding: 4px 0 14px 10px; min-height: 0 !important; border-bottom: 1px solid var(--line); align-items: stretch !important; }
+.res .slot.cl-ok { color: var(--ok-txt); }
+.res .slot.cl-err { color: var(--yapi); }
+.cl-done { color: var(--ok-txt); }
