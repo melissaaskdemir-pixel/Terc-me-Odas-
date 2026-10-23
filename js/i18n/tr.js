@@ -243,8 +243,17 @@ export default {
   'a.del': 'Sil', 'a.packOk': '"{a}" eklendi: {n} kart.', 'a.packOkQ': '"{a}" eklendi: {n} soru.', 'a.packSubQ': '{n} soru · {d}', 'a.packBad': 'Paket okunamadı.',
   'a.gApp': 'Uygulama', 'a.versions': 'Uygulama {a} · içerik {c} · kayıt: {p}', 'a.persistOk': 'kalıcı', 'a.persistNo': 'geçici (gizli sekme?)',
   'a.update': 'Güncellemeleri denetle', 'a.updateShort': 'Güncelle',
-  'a.about': 'Kelime verisi: Melisa\'nın çalışma dosyaları ve Dışişleri Bakanlığı terminoloji listeleri. Sözlük ve vurgu: OpenRussian (CC BY-SA 4.0). Sıklık sırası: FrequencyWords, OpenSubtitles 2018 (CC BY-SA 4.0). Çekimler: OpenCorpora (pymorphy3). Okuma metinleri: Rusça Vikipedi (CC BY-SA 4.0), kısaltılarak ve uyarlanarak. Üretilmiş YDS denemeleri: Claude; ÖSYM soruları sitede yok, kişisel paketle yüklenir. Ses: Silero TTS (ticari olmayan kullanım). Dikte insan sesi: Tatoeba gönüllüleri (cümleler CC BY 2.0 FR; sesler CC BY 4.0, CC BY-NC 4.0, CC0). Yazı tipleri: ParaType PT Serif, PT Sans, PT Mono (OFL).',
+  'a.about': 'Kelime verisi: Melisa\'nın çalışma dosyaları ve Dışişleri Bakanlığı terminoloji listeleri. Sözlük ve vurgu: OpenRussian (CC BY-SA 4.0). Sıklık sırası: FrequencyWords, OpenSubtitles 2018 (CC BY-SA 4.0). Çekimler: OpenCorpora (pymorphy3). Okuma metinleri: Rusça Vikipedi (CC BY-SA 4.0), kısaltılarak ve uyarlanarak. Okuma çekirdeği: kelime listesi Leipzig Corpora Collection haber ve Vikipedi derlemlerinden sayıldı; örnek cümlelerin çoğu Rusça Vikipedi\'den (CC BY-SA 4.0), Türkçe anlam ve çeviriler bu uygulamanın. Üretilmiş YDS denemeleri: Claude; ÖSYM soruları sitede yok, kişisel paketle yüklenir. Ses: Silero TTS (ticari olmayan kullanım). Dikte insan sesi: Tatoeba gönüllüleri (cümleler CC BY 2.0 FR; sesler CC BY 4.0, CC BY-NC 4.0, CC0). Yazı tipleri: ParaType PT Serif, PT Sans, PT Mono (OFL).',
 
+  // okuma çekirdeği (tanıma kartları)
+  'type.tani': 'Okuma kelimesi', 'kind.tani': 'OKUMA KELİMELERİ',
+  'tn.show': 'Anlamını göster', 'tn.kRead': 'Oku · anlamını hatırla', 'tn.kListen': 'Dinle · anlamını hatırla',
+  'tn.listenHint': 'Cümleyi dinle, anlamını çıkarmaya çalış. Gösterince hangi kelime olduğunu ve anlamını görürsün.', 'tn.listenAgain': 'Yeniden dinle',
+  'tn.meaning': 'Anlamı', 'tn.no': 'Bilmiyordum', 'tn.hard': 'Zorlandım', 'tn.ok': 'Bildim',
+  'tn.endLine': 'Bildim {ok} · Zorlandım {zor} · Bilmiyordum {bil}',
+  'c.tani': 'Okuma kelimeleri', 'c.taniSub': '{due} tekrar · {nw} yeni', 'c.taniDone': 'bugünlük tamam',
+  'c.taniNote': 'Haberde ve Vikipedi\'de sık geçen, kartlarında olmayan {n} kelime. Yazmak yok: oku ya da dinle, anlamını hatırla, açıp kendin işaretle.',
+  'a.taniYeni': 'Okuma kelimeleri', 'a.taniYeniSub': 'günde en çok yeni (yazmadan, tanıyarak)',
   // güncelleme ve hatalar
   'u.ready': 'Yeni sürüm hazır. Arşiv > Ayarlar > Güncellemeleri denetle.', 'u.none': 'Servis çalışanı yok.', 'u.latest': 'En güncel sürümdesin.',
   'u.offline': 'İnternet yok; sonra dene.',

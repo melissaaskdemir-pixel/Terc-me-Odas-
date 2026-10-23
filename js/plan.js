@@ -12,8 +12,9 @@ export const MINI = 5;
 export function deckOn(id) { return S.settings.decks[id] !== false; }
 export function deckWeight(id) { return S.settings.deckW[id] ?? 1; }
 
-export function newAllowance(day = dayNum()) {
+export function newAllowance(day = dayNum(), tani = false) {
   const r = dayRec(day);
+  if (tani) return Math.max(0, set('taniYeni') + (S.prof.extraTani?.[day] || 0) - (r.tnw || 0));
   return Math.max(0, set('yeni') + (S.prof.extraNew?.[day] || 0) - r.nw);
 }
 
@@ -25,8 +26,9 @@ export function knownCount() { let n = 0; for (const st of S.cards.values()) if 
 export function learningCount() { let n = 0; for (const st of S.cards.values()) if (wordCard(st.id) && st.st > 0 && !isKnown(st)) n++; return n; }
 
 // ---------------------------------------------------------------- aday listeleri
-function filterFn({ decks, types }) {
-  return c => (decks ? decks.includes(c.deck) : deckOn(c.deck)) && (!types || types.includes(TYPE_GROUP[c.t] || c.t));
+// Tanıma kartları (okuma çekirdeği) yalnız kendi oturumlarında; yazma oturumları onları görmez
+function filterFn({ decks, types, tani }) {
+  return c => (decks ? decks.includes(c.deck) : deckOn(c.deck)) && (!types || types.includes(TYPE_GROUP[c.t] || c.t)) && ((c.t === 'tani') === !!tani);
 }
 
 function recentWeakType() {
@@ -131,11 +133,11 @@ export function createSession(kind, opts = {}) {
   const due = LISTED.has(kind) ? [] : dueList(opts, today);
   sess.due = due;
   sess.list = LISTED.has(kind) ? [...(opts.ids || [])] : [];
-  const newLeft = newAllowance(today);
+  const newLeft = newAllowance(today, !!opts.tani);
   sess.newShare = due.length + newLeft ? newLeft / (due.length + newLeft) : 0;
   if (kind === 'gunun' && goalLeft(today) === 0) sess.extra = 20;
   if (kind === 'mini') sess.base = MINI;
-  else if (kind === 'tur') sess.base = opts.size || 20;
+  else if (kind === 'tur' || kind === 'tani') sess.base = opts.size || 20;
   else if (LISTED.has(kind)) sess.base = sess.list.length;
   return sess;
 }
@@ -172,11 +174,17 @@ export function nextItem(sess) {
   if (sess.kind === 'gunun' && sess.extra > 0) sess.extra--;
   const st = cardState(id);
   const c = CARDS.get(id);
-  const variant = ((st.reps || 0) + (hash32(id) % 2)) % variantCount(c);
-  return { id, variant, isNew: !(st.st > 0) };
+  return { id, variant: variantFor(c, st), isNew: !(st.st > 0) };
 }
 
 function exhausted(sess) { return sess._exhausted; }
+
+// Gösterim biçimi. Tanıma kartı: ilk iki görüşte okuma (0), sonra yarı yarıya dinleme (1: önce yalnız ses)
+export function variantFor(c, st) {
+  const reps = st.reps || 0;
+  if (c.t === 'tani') return reps >= 2 && c.ex?.[0]?.[2] && (reps + hash32(c.id)) % 2 ? 1 : 0;
+  return (reps + (hash32(c.id) % 2)) % variantCount(c);
+}
 
 function pickBase(sess) {
   const { opts } = sess;
@@ -185,7 +193,7 @@ function pickBase(sess) {
     return null;
   }
   const dueLeft = sess.due.filter(id => !sess.served.has(id));
-  const newOk = newAllowance(sess.today) > 0;
+  const newOk = newAllowance(sess.today, !!opts.tani) > 0;
   const servedNew = sess.stats.nw;
   const wantNew = newOk && (!dueLeft.length || servedNew < sess.newShare * (sess.served.size + 1));
   let id = null;
@@ -203,6 +211,8 @@ const STRICT_FORM = new Set(['yonetim', 'koll', 'esanlam', 'onek', 'form', 'reg'
 
 export function ratingFor(card, o) {
   if (o.res === 'known') return 4;
+  // tanıma: Bildim 3, Zorlandım 2, Bilmiyordum 1 (hız ölçülmez: okuma süresi cümleye bağlı)
+  if (card.t === 'tani') return o.res === 'ok' ? (o.hint ? 2 : 3) : 1;
   if (o.res === 'bil' || o.res === 'yapi') return 1;
   if (o.res === 'sonek') return STRICT_FORM.has(card.t) ? 1 : 2;
   if (o.res === 'imla') return 2;
@@ -233,7 +243,7 @@ export async function recordAnswer(sess, item, o) {
   const th = S.prof.theta || 0;
   const b = st0.b ?? card.d ?? 0;
   const p = sigmoid(th - b);
-  if (!item.again && o.res !== 'known') {
+  if (!item.again && o.res !== 'known' && card.t !== 'tani') {
     const y = { ok: 1, imla: 0.75, sonek: 0.4, yapi: 0, bil: 0 }[o.res] ?? 0;
     S.prof.theta = clamp(th + 0.06 * (y - p), -4, 6);
     const n = st0.eloN || 0;
@@ -260,7 +270,10 @@ export async function recordAnswer(sess, item, o) {
   day.n++;
   if (ok) day.ok++;
   if (day.err[o.res] != null) day.err[o.res]++;
-  if (item.isNew && !item.again) { day.nw++; sess.stats.nw++; }
+  if (item.isNew && !item.again) {
+    if (card.t === 'tani') day.tnw = (day.tnw || 0) + 1; else day.nw++;
+    sess.stats.nw++;
+  }
   day.pts += pts;
   const goal = set('halka');
   const goalHit = before < goal && day.n >= goal;
@@ -293,9 +306,10 @@ export async function recordAnswer(sess, item, o) {
   return { rating, pts, requeue, ivl: st.ivl, combo: sess.combo, goalHit };
 }
 
-export async function addExtraNew(n = 10) {
+export async function addExtraNew(n = 10, tani = false) {
   const d = dayNum();
-  S.prof.extraNew = { [d]: (S.prof.extraNew?.[d] || 0) + n };
+  const k = tani ? 'extraTani' : 'extraNew';
+  S.prof[k] = { [d]: (S.prof[k]?.[d] || 0) + n };
   await saveProf();
 }
 

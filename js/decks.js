@@ -8,6 +8,7 @@ export let SERIES = {};
 export let CONTENT_VERSION = '';
 export let ONEK = null;   // önek anlatımı + aileler (data/onek.json)
 export let YAZMA = null;  // yazma kartları ve kategorileri (data/yazma.json)
+export let CEKIRDEK = null; // okuma çekirdeği: tanıma kartları (data/cekirdek.json)
 
 async function fetchJSON(url) {
   const r = await fetch(url);
@@ -16,7 +17,7 @@ async function fetchJSON(url) {
 }
 
 function addDeck(d, pack) {
-  const deck = { id: d.id, ad: d.ad, cards: d.cards, pack: pack || null };
+  const deck = { id: d.id, ad: d.ad, cards: d.cards, pack: pack || null, mod: d.mod || null };
   d.cards.forEach((c, i) => { c.deck = d.id; if (c.o == null) c.o = i; CARDS.set(c.id, c); });
   DECKS.set(d.id, deck);
 }
@@ -28,6 +29,7 @@ export async function loadDecks() {
   addDeck(k);
   try { ONEK = await fetchJSON('data/onek.json'); addDeck(ONEK.deck); } catch (e) { ONEK = null; }
   try { YAZMA = await fetchJSON('data/yazma.json'); addDeck(YAZMA.deck); } catch (e) { YAZMA = null; }
+  try { CEKIRDEK = await fetchJSON('data/cekirdek.json'); addDeck(CEKIRDEK); } catch (e) { CEKIRDEK = null; }
   for (const p of await db.all('packs')) for (const d of p.decks || []) addDeck(d, p.id);
 }
 
@@ -39,7 +41,7 @@ export function loadMorph() {
 
 // ---------------------------------------------------------------- kart yardımcıları
 export const TYPE_GROUP = {
-  kelime: 'kelime', kalip: 'kelime', baglac: 'kelime', terim: 'kelime',
+  tani: 'tani', kelime: 'kelime', kalip: 'kelime', baglac: 'kelime', terim: 'kelime',
   cift: 'cift', yonetim: 'yonetim', koll: 'koll', register: 'koll', esanlam: 'esanlam', onek: 'onek', form: 'form', reg: 'koll', ceviri: 'ceviri',
 };
 
@@ -52,7 +54,9 @@ export function expected(card, variant = 0) {
   return { accepted: card.a, show: card.a[0], cloze: null, full: card.f, audio: card.au };
 }
 
-export function variantCount(card) { return card.cz ? card.cz.length : 1; }
+export function variantCount(card) { return card.cz ? card.cz.length : card.t === 'tani' ? 2 : 1; }
+// Tanıma destesi mi (yazmadan, Rusça → anlam)
+export const isTaniDeck = id => DECKS.get(id)?.mod === 'tani';
 
 // ---------------------------------------------------------------- kişisel paketler
 // İki biçim kabul edilir:

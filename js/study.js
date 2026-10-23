@@ -12,7 +12,7 @@ import { go } from './main.js';
 import { okumaToday, okumaLabel } from './okuma.js';
 
 const TYPE_LABEL = {
-  kelime: 'type.kelime', kalip: 'type.kalip', baglac: 'type.baglac', terim: 'type.terim', cift: 'type.cift',
+  tani: 'type.tani', kelime: 'type.kelime', kalip: 'type.kalip', baglac: 'type.baglac', terim: 'type.terim', cift: 'type.cift',
   yonetim: 'type.yonetim', koll: 'type.koll', esanlam: 'type.esanlam', register: 'type.register', onek: 'type.onek', form: 'type.form', reg: 'type.reg', ceviri: 'type.ceviri',
 };
 
@@ -58,7 +58,7 @@ function buildFrame() {
   const sub = el('div.st-sub', F.kind, F.pts);
   const inp = el('div.st-in', el('label', { for: 'cevap' }, F.label, F.labelR), F.input);
   F.input.id = 'cevap';
-  const root = el('div.study', top, sub, F.cardwrap, F.hint, inp, F.act);
+  const root = F.root = el('div.study', top, sub, F.cardwrap, F.hint, inp, F.act);
   root.addEventListener('mousedown', e => { if (e.target.closest('button')) e.preventDefault(); });
   screen.append(root);
   updateTop();
@@ -123,6 +123,10 @@ function next() {
   cur.fill = null;
   cur.fillCls = '';
   cur.retypeFails = 0;
+  cur.listen = false;
+  const tani = card.t === 'tani';
+  cur.f.root.classList.toggle('tani', tani);
+  if (tani) return taniAsk();
   audio.prepare(ex.audio);
   renderCard();
   const f = cur.f;
@@ -138,12 +142,14 @@ function next() {
 }
 
 function focusInput() {
+  if (cur.card && cur.card.t === 'tani') return; // tanıma kartında klavye açılmaz
   const i = cur.f.input;
   if (document.activeElement !== i) i.focus({ preventScroll: true });
 }
 
 function kicker() {
   const c = cur.card;
+  if (c.t === 'tani') return t(cur.listen ? 'tn.kListen' : 'tn.kRead');
   const parts = [t(TYPE_LABEL[c.t] || 'type.kelime')];
   if (c.t === 'esanlam' && c.ser) parts.push(t('st.series', { s: c.ser.toLocaleUpperCase('tr') }));
   else if (c.s) parts.push(c.s.split(' · ')[0].toLocaleUpperCase('tr'));
@@ -180,6 +186,19 @@ function promptNodes() {
     case 'register':
       out.push(el('div.v.ru', c.v), el('div.qs', c.q), asking ? el('div.hint', c.h) : null);
       break;
+    case 'tani': {
+      const e = c.ex && c.ex[0];
+      if (cur.listen && asking) {
+        out.push(el('div.tn-listen',
+          el('button.pbtn.round.tn-play', { 'aria-label': t('tn.listenAgain'), on: { click: ev => { ev.stopPropagation(); audio.play(e[2]); } } }, svg(ICON.play)),
+          el('div.hint', t('tn.listenHint'))));
+      } else {
+        out.push(el('div.tn-word.ru', c.v));
+        if (c.h) out.push(el('div.hint', c.h));
+        if (e) out.push(sentNode(e[0], c.w));
+      }
+      break;
+    }
     default:
       out.push(el('div.q' + (long ? '.long' : ''), c.q));
       if (c.qs) out.push(el('div.qs', c.qs));
@@ -206,7 +225,9 @@ function renderCard(extra, anim = 'cardin') {
   });
   if (cur.state === 'ask' && cur.item.isNew && !cur.item.again) enableSwipe(card);
   card.addEventListener('click', e => {
-    if (cur.state === 'right' && !e.target.closest('button')) holdAdvance();
+    if (e.target.closest('button')) return;
+    if (cur.state === 'right') holdAdvance();
+    else if (cur.state === 'ask' && cur.card.t === 'tani') taniReveal();
   });
   return card;
 }
@@ -587,7 +608,7 @@ function endScreen() {
   if (errs) for (const k of ['yapi', 'sonek', 'imla']) if (s[k]) bar.append(el('i', { style: { width: (100 * s[k] / errs) + '%', background: `var(--${k})` } }));
   const evs = cur.events.map(e => e.k === 'goal' ? t('end.goal') : e.k === 'milestone' ? t('end.milestone', { n: e.n }) : t('end.freeze'));
   const refillN = sess.kind === 'hafta' && typeof sess.opts.refill === 'function' ? sess.opts.refill().length : 0;
-  const canMore = sess.kind === 'gunun' || sess.kind === 'tur' || sess.kind === 'mini' || refillN > 0;
+  const canMore = sess.kind === 'gunun' || sess.kind === 'tur' || sess.kind === 'mini' || sess.kind === 'tani' || refillN > 0;
   const wrap = el('div.study', el('div.endsum',
     el('div.kicker', t('end.kicker')),
     el('h1.h1', t('end.title')),
@@ -595,11 +616,12 @@ function endScreen() {
       stat(s.n, t('end.answers')), stat(okPct + '%', t('end.acc')), stat('+' + s.pts, t('end.pts'))),
     el('div.grid3',
       stat(s.nw, t('end.new')), stat(sess.maxCombo, t('end.combo')), stat(`${day.n}/${goal}`, t('end.ring'))),
+    s.tani ? el('div.note', t('tn.endLine', { ok: s.tani.ok, zor: s.tani.zor, bil: s.tani.bil })) : null,
     errs ? el('div.sect', el('div.kicker', t('end.errs')), bar,
       el('div.note', `${t('lg.yapi')} ${s.yapi} · ${t('lg.sonek')} ${s.sonek} · ${t('lg.imla')} ${s.imla} · ${t('st.dontKnow')} ${s.bil}`)) : null,
     el('div.note', st.todayDone ? t('end.streakOk', { n: st.n }) : t('end.streakNeed', { n: plan.MINI - day.n })),
     sess._exhausted && day.n < goal ? el('div.panel.sect', el('div.note', t('end.empty')),
-      el('button.btn.btn-sm', { on: { click: async () => { await plan.addExtraNew(10); more(); } } }, t('c.extra10'))) : null,
+      el('button.btn.btn-sm', { on: { click: async () => { await plan.addExtraNew(10, !!sess.opts.tani); more(); } } }, t('c.extra10'))) : null,
     ...evs.map(x => el('div.panel', x)),
     readOffer(),
     el('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' } },
@@ -639,3 +661,85 @@ function more() {
 function missMark(e) {
   return el('span.tk-miss', { 'aria-label': 'eksik kelime', style: { width: Math.min(5, 0.9 + 0.32 * (e || '').length).toFixed(2) + 'em' } });
 }
+
+// ---------------------------------------------------------------- tanıma kartı (okuma çekirdeği)
+// Yazmak yok: Rusça kelime ve cümle (ya da yalnız ses) → anlamını hatırla → göster → kendin işaretle.
+function sentNode(ru, w) {
+  const i = w ? ru.indexOf(w) : -1;
+  if (i < 0) return el('div.tn-sent.ru', ru);
+  return el('div.tn-sent.ru', ru.slice(0, i), el('mark.tn-hl', w), ru.slice(i + w.length));
+}
+
+function taniAsk() {
+  const f = cur.f;
+  const e = cur.card.ex && cur.card.ex[0];
+  cur.listen = cur.item.variant === 1 && !!(e && e[2]);
+  f.input.value = '';
+  f.hint.textContent = '';
+  try { if (document.activeElement === f.input) f.input.blur(); } catch (er) {}
+  const key = cur.listen ? e[2] : cur.card.au;
+  audio.prepare(key);
+  if (cur.card.au && key !== cur.card.au) audio.prepare(cur.card.au);
+  renderCard();
+  setActions(el('button.btn.btn-primary.tn-show', { 'data-fx': 'own', on: { click: taniReveal } }, t('tn.show')));
+  updateTop();
+  audio.sfx('paper');
+  if (cur.listen) audio.playNow(key) || audio.play(key);
+}
+
+function taniBack() {
+  const c = cur.card, e = c.ex && c.ex[0];
+  const fb = el('section.fb.tn-back');
+  fb.append(el('div.exrow', el('div', { style: { flex: '1' } }, el('div.lab', t('tn.meaning')), el('div.tn-q', c.q)), audioBtn(c.au)));
+  if (c.p && c.p[0] && c.p[1]) fb.append(el('div.meta', el('b', t('st.pair') + ': '), el('span.ru', `${c.p[0]} (impf.) · ${c.p[1]} (pf.)`)));
+  if (e) fb.append(el('div.exrow', el('div.ex', { style: { flex: '1' } }, el('div.t', e[1])), e[2] ? audioBtn(e[2]) : null));
+  fb.append(el('div.tools',
+    e && e[2] ? el('button.pbtn', { on: { click: ev => { ev.stopPropagation(); audio.play(e[2], 0.7); } } }, '0.7×') : null,
+    el('button.plink', { on: { click: reportStress } }, t('st.stressWrong')),
+    c.s ? el('span.lab', { style: { marginLeft: 'auto' } }, c.s) : null));
+  return fb;
+}
+
+function taniReveal() {
+  if (!cur || cur.state !== 'ask' || cur.card.t !== 'tani') return;
+  cur.ms = performance.now() - cur.shownAt;
+  cur.state = 'shown';
+  renderCard(taniBack(), 'tn-open');
+  if (set('autoplay') && cur.card.au) audio.playNow(cur.card.au) || audio.play(cur.card.au);
+  haptic('tick');
+  setActions(
+    el('button.btn.tn-no', { 'data-fx': 'own', on: { click: () => taniGrade('bil') } }, t('tn.no')),
+    el('button.btn.tn-hard', { 'data-fx': 'own', on: { click: () => taniGrade('zor') } }, t('tn.hard')),
+    el('button.btn.btn-primary.tn-ok', { 'data-fx': 'own', on: { click: () => taniGrade('ok') } }, t('tn.ok')));
+}
+
+async function taniGrade(kind) {
+  if (!cur || cur.state !== 'shown') return;
+  cur.state = 'done';
+  const item = cur.item, card = cur.cardEl;
+  const s = cur.sess.stats;
+  s.tani = s.tani || { ok: 0, zor: 0, bil: 0 };
+  s.tani[kind]++;
+  const pr = plan.recordAnswer(cur.sess, item, {
+    res: kind === 'bil' ? 'bil' : 'ok', typed: '', exp: cur.card.v, ms: cur.ms, hint: kind === 'zor' ? 1 : 0,
+    why: [kind === 'zor' ? 'zor' : '', cur.listen ? 'dinle' : ''].filter(Boolean).join(' '),
+  });
+  if (kind === 'ok') { card.append(el('div.stamp', 'ВЕРНО')); audio.sfx('stamp'); haptic('ok'); }
+  else if (kind === 'zor') haptic('tick');
+  else { haptic('bad'); audio.sfx('soft'); }
+  const r = await pr;
+  await afterRecord(r);
+  if (!cur || cur.item !== item) return;
+  updateTop();
+  setTimeout(() => { if (cur && cur.item === item && cur.state === 'done') next(); }, kind === 'ok' ? 420 : 140);
+}
+
+// Klavye (masaüstü): boşluk/Enter göster; 1 bilmiyordum, 2 zorlandım, 3 ya da Enter bildim
+document.addEventListener('keydown', e => {
+  if (!cur || !cur.card || cur.card.t !== 'tani' || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (cur.state === 'ask' && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); taniReveal(); }
+  else if (cur.state === 'shown') {
+    const k = { 1: 'bil', 2: 'zor', 3: 'ok', Enter: 'ok' }[e.key];
+    if (k) { e.preventDefault(); taniGrade(k); }
+  }
+});

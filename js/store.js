@@ -5,6 +5,7 @@ import { dayNum } from './util.js';
 export const DEFAULTS = {
   halka: 60,            // günlük hedef (cevap sayısı)
   yeni: 30,             // günde yeni kart
+  taniYeni: 20,         // okuma çekirdeği: günde yeni tanıma kartı
   decks: { kendi: true, mfa: true },
   deckW: { kendi: 2, mfa: 1 },
   autoplay: true,       // cevaptan sonra otomatik seslendir

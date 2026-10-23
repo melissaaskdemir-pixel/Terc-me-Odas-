@@ -18,6 +18,7 @@ Bakanlık terimleri gibi açık lisanslı olmayan içerik bu sitede yayımlanmaz
 
 ## v0.2–v0.4
 
+- Okuma kelimeleri: haberde ve Vikipedi'de sık geçen 687 kelimelik çekirdek; yazmadan tanıma kartı (oku ya da önce yalnız sesi dinle, anlamını hatırla, kendin işaretle)
 - Okuma: uyarlanmış ve özgün paragraflar, cümle sesleri, kelimeye dokununca sözlük
 - Sözlük: internetsiz arama, çekim tabloları, sıklık sırası
 - Kapsam: kelime dağarcığı tahmini ve testi
@@ -31,7 +32,7 @@ Bakanlık terimleri gibi açık lisanslı olmayan içerik bu sitede yayımlanmaz
 
 - `index.html`, `css/`, `js/`: uygulama (derleme adımı yok)
 - `js/i18n/tr.js`: arayüz metinleri (ileride başka diller için ayrı dosya)
-- `data/kendi.json`: kendi kartlar; `data/morph.json`: çekim verisi
+- `data/kendi.json`: kendi kartlar; `data/cekirdek.json`: okuma çekirdeği (tanıma kartları); `data/morph.json`: çekim verisi
 - `audio/a/`: Aidar sesleri
 - `sw.js`: internetsiz çalışma için servis çalışanı
 
@@ -39,6 +40,7 @@ Bakanlık terimleri gibi açık lisanslı olmayan içerik bu sitede yayımlanmaz
 
 - Çekimler: OpenCorpora sözlüğü (pymorphy3 ile), CC BY-SA
 - Vurgu: OpenRussian sözlüğü, CC BY-SA
+- Okuma çekirdeği (data/cekirdek.json): kelime listesi Leipzig Corpora Collection (rus_news_2022_100K, rus_wikipedia_2021_100K) üzerinde sayıldı; örnek cümlelerin çoğu Rusça Vikipedi'den alındı (CC BY-SA 4.0), bu yüzden dosya da CC BY-SA 4.0'dır. Türkçe anlamlar, çeviriler ve 'örnek' etiketli cümleler bu projenin.
 - Ses: Silero TTS v5.4, ticari olmayan kullanım (CC BY-NC-SA 4.0)
 - Dikte insan sesi: Tatoeba (https://tatoeba.org) gönüllülerinin kayıtları; cümleler CC BY 2.0 FR, sesler okuyanın lisansıyla (CC BY 4.0, CC BY-NC 4.0, CC0 1.0). Okuyanlar: fjay69, Inego, EugeneGS, retr0ra1n, Shady_arc, Alex_M, namikiri, lovermann. Her klibin okuyanı, lisansı ve cümle numarası data/insan.json içinde ve uygulamada cümlenin altında. Sesler kırpıldı, ses düzeyi eşitlendi ve AAC'ye dönüştürüldü.
 - Yazı tipleri: ParaType PT Serif, PT Sans, PT Mono, SIL Open Font License 1.1 (fonts/OFL.txt)

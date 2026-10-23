@@ -2,7 +2,7 @@
 import { el, dayNum } from './util.js';
 import { t } from './i18n.js';
 import { S } from './store.js';
-import { DECKS } from './decks.js';
+import { DECKS, isTaniDeck } from './decks.js';
 import * as plan from './plan.js';
 import { startStudy } from './study.js';
 import { go } from './main.js';
@@ -17,7 +17,7 @@ const TYPES = [
 const ui = { decks: null, type: 'all' };
 
 export function renderCalis(root) {
-  const deckIds = [...DECKS.keys()];
+  const deckIds = [...DECKS.keys()].filter(id => !isTaniDeck(id));
   if (!ui.decks) ui.decks = deckIds.filter(plan.deckOn);
   ui.decks = ui.decks.filter(id => DECKS.has(id));
   const opts = () => ({ decks: ui.decks, types: ui.type === 'all' ? null : [ui.type] });
@@ -76,6 +76,7 @@ export function renderCalis(root) {
       counts, startBtn, extraBox),
     errIds.length ? el('button.btn.btn-wide', { on: { click: () => startStudy('hata', { ids: errIds }, () => go('calis')) } },
       t('c.errs', { n: errIds.length })) : null,
+    taniBtn(),
     calisilanBtn(),
     el('button.btn.btn-big', { on: { click: () => openYds() } }, el('span', t('c.ydsOpen')), el('span.mono.acc', t('c.ydsSub'))),
     el('button.btn.btn-big', { on: { click: () => go('onek') } }, el('span', t('c.onek')), el('span.mono.acc', t('c.onekSub', { n: DECKS.get('onek')?.cards.length || 0 }))),
@@ -84,6 +85,26 @@ export function renderCalis(root) {
     el('button.btn.btn-big', { on: { click: () => go('gramer') } }, el('span', t('c.gramerOpen')), el('span.mono.acc', t('c.gramerSub'))),
   );
   root.append(wrap);
+}
+
+// Okuma çekirdeği: yazmadan tanıma oturumu (Rusça → anlam)
+export function taniStatus() {
+  const decks = [...DECKS.keys()].filter(isTaniDeck);
+  if (!decks.length) return null;
+  const o = { decks, tani: true };
+  return { decks, due: plan.countDue(o), nw: Math.min(plan.countNew(o), plan.newAllowance(dayNum(), true)), total: decks.reduce((a, id) => a + DECKS.get(id).cards.length, 0) };
+}
+export function startTani(back = 'calis') {
+  const s = taniStatus();
+  if (s) startStudy('tani', { decks: s.decks, tani: true, size: 20 }, () => go(back));
+}
+function taniBtn() {
+  const s = taniStatus();
+  if (!s) return null;
+  return el('div.sect',
+    el('button.btn.btn-big.btn-tani', { on: { click: () => startTani() } }, el('span', t('c.tani')),
+      el('span.mono.acc', s.due || s.nw ? t('c.taniSub', { due: s.due, nw: s.nw }) : t('c.taniDone'))),
+    el('div.note', t('c.taniNote', { n: s.total })));
 }
 
 function calisilanBtn() {

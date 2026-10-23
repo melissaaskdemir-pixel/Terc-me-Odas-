@@ -1,5 +1,6 @@
 // Masa: günün seti, halka, seri, bilinen kelime, ısı haritası, iddia, haftalık brifing
 import { weekStatus } from './calisilan.js';
+import { taniStatus, startTani } from './calis.js';
 import { el, dayNum, fmtDay, weekStart, monthShort, dayOfMonth, fmtNum, pct } from './util.js';
 import { t } from './i18n.js';
 import { S, set, dayRec, saveProf } from './store.js';
@@ -56,6 +57,7 @@ export function renderMasa(root) {
 
     el('div.list',
       el('button', { on: { click: () => go('calis') } }, el('span', t('m.lKelime')), el('span.r', t('m.lDue', { n: due }))),
+      taniRow(),
       calisilanRow(),
       el('button', { on: { click: () => go('okuma') } }, el('span', t('m.lOkuma')), okStatus()),
       el('button', { on: { click: () => go('arsiv') } }, el('span', t('m.lHata')), el('span.r', t('m.lHataN', { n: recentErrCount(today) })))),
@@ -195,6 +197,13 @@ export async function showBriefing(ws) {
     best && best.n ? el('p', el('span.no', '4.'), t('b.best', { d: fmtDay(best.day, { weekday: true }), n: best.n })) : null,
     el('p', el('span.no', '5.'), weakest && weakest[1] ? t('b.focus.' + weakest[0]) : t('b.focus.none')),
     el('button.btn.btn-primary', { on: { click: close } }, t('b.close'))));
+}
+
+function taniRow() {
+  const s = taniStatus();
+  if (!s) return null;
+  return el('button', { on: { click: () => startTani('masa') } }, el('span', t('c.tani')),
+    el('span.r', s.due || s.nw ? t('c.taniSub', { due: s.due, nw: s.nw }) : t('c.taniDone')));
 }
 
 function calisilanRow() {
