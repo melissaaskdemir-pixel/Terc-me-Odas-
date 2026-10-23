@@ -23,7 +23,7 @@ Bakanlık terimleri gibi açık lisanslı olmayan içerik bu sitede yayımlanmaz
 - Sözlük: internetsiz arama, çekim tabloları, sıklık sırası
 - Kapsam: kelime dağarcığı tahmini ve testi
 - YDS: üretilmiş denemeler, serbest soru çözme ve açıklamalı alıştırma bankası, kalem ve silgi
-- Önekler: 20 öneğin anlamları, kök aileleri, kurallar ve önek kartları
+- Önekler: 20 öneğin anlamları, 31 kök ailesi (294 kart), kurallar
 - Ses: dikte (kelime kelime puan, imla defteri); insan sesi kaynağı Tatoeba gönüllülerinin kayıtları
 - Yazma: biçim, sade → resmî ve çeviri kartları
 - Gramer haritası: A1–C2 konu iskeleti, madde madde işaretleme
