@@ -7,7 +7,7 @@ export const DEFAULTS = {
   yeni: 30,             // günde yeni kart
   taniYeni: 20,         // okuma çekirdeği: günde yeni tanıma kartı
   decks: { kendi: true, mfa: true },
-  deckW: { kendi: 2, mfa: 1 },
+  deckW: { kendi: 2, mfa: 1, cekirdek: 2 },
   autoplay: true,       // cevaptan sonra otomatik seslendir
   rate: 1,              // ses hızı
   voice: 'a',           // a = Aidar

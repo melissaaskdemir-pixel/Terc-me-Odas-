@@ -18,7 +18,7 @@ Bakanlık terimleri gibi açık lisanslı olmayan içerik bu sitede yayımlanmaz
 
 ## v0.2–v0.4
 
-- Okuma kelimeleri: haberde ve Vikipedi'de sık geçen 687 kelimelik çekirdek; yazmadan tanıma kartı (oku ya da önce yalnız sesi dinle, anlamını hatırla, kendin işaretle)
+- Okuma çekirdeği: haberde ve Vikipedi'de sık geçen 687 kelime; normal yazma kartı olarak günün setine ve turlara girer, her kartta gerçek örnek cümle ve sesi
 - Okuma: uyarlanmış ve özgün paragraflar, cümle sesleri, kelimeye dokununca sözlük
 - Sözlük: internetsiz arama, çekim tabloları, sıklık sırası
 - Kapsam: kelime dağarcığı tahmini ve testi
@@ -32,7 +32,7 @@ Bakanlık terimleri gibi açık lisanslı olmayan içerik bu sitede yayımlanmaz
 
 - `index.html`, `css/`, `js/`: uygulama (derleme adımı yok)
 - `js/i18n/tr.js`: arayüz metinleri (ileride başka diller için ayrı dosya)
-- `data/kendi.json`: kendi kartlar; `data/cekirdek.json`: okuma çekirdeği (tanıma kartları); `data/morph.json`: çekim verisi
+- `data/kendi.json`: kendi kartlar; `data/cekirdek.json`: okuma çekirdeği; `data/morph.json`: çekim verisi
 - `audio/a/`: Aidar sesleri
 - `sw.js`: internetsiz çalışma için servis çalışanı
 

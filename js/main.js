@@ -22,7 +22,7 @@ import { renderYazma } from './yazma.js';
 import { renderGramer } from './gramer.js';
 import { renderCalisilan } from './calisilan.js';
 
-export const APP_VERSION = '0.5.0';
+export const APP_VERSION = '0.5.1';
 
 const TABS = [
   ['masa', 'tab.masa', renderMasa], ['calis', 'tab.calis', renderCalis], ['okuma', 'tab.okuma', renderOkuma],

@@ -186,7 +186,7 @@ async function renderAyar(body) {
     el('div.kicker', t('a.gGoals')),
     row(t('a.halka'), t('a.halkaSub'), stepper(st.halka, { min: 20, max: 200, step: 10 }, v => save('halka', v))),
     row(t('a.yeni'), t('a.yeniSub'), stepper(st.yeni, { min: 0, max: 100, step: 5 }, v => save('yeni', v))),
-    row(t('a.taniYeni'), t('a.taniYeniSub'), stepper(st.taniYeni, { min: 0, max: 100, step: 5 }, v => save('taniYeni', v))),
+    ...([...DECKS.keys()].some(isTaniDeck) ? [row(t('a.taniYeni'), t('a.taniYeniSub'), stepper(st.taniYeni, { min: 0, max: 100, step: 5 }, v => save('taniYeni', v)))] : []),
     el('div.kicker', t('a.gDecks')),
     ...[...DECKS.values()].filter(d => !isTaniDeck(d.id)).map(d => row(d.ad, t('a.deckSub', { n: d.cards.length }),
       el('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
